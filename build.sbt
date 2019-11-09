@@ -1,3 +1,9 @@
+import Dependencies._
+
+enablePlugins(JavaAppPackaging, DockerPlugin)
+
+mainClass in Compile := Some("com.cloriko.QuickstartServer")
+
 lazy val akkaHttpVersion = "10.1.10"
 lazy val akkaVersion    = "2.5.26"
 
@@ -5,19 +11,9 @@ lazy val root = (project in file(".")).
   settings(
     inThisBuild(List(
       organization    := "com.example",
-      scalaVersion    := "2.12.8"
+      scalaVersion    := "2.12.8",
+      version         := Version.version
     )),
-    name := "untitled",
-    libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-http"            % akkaHttpVersion,
-      "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
-      "com.typesafe.akka" %% "akka-http-xml"        % akkaHttpVersion,
-      "com.typesafe.akka" %% "akka-stream"          % akkaVersion,
-      "de.heikoseeberger" %% "akka-log4j"           % "1.6.1",
-      "org.apache.logging.log4j" % "log4j-scala" % "11.0",
-      "com.typesafe.akka" %% "akka-http-testkit"    % akkaHttpVersion % Test,
-      "com.typesafe.akka" %% "akka-testkit"         % akkaVersion     % Test,
-      "com.typesafe.akka" %% "akka-stream-testkit"  % akkaVersion     % Test,
-      "org.scalatest"     %% "scalatest"            % "3.0.5"         % Test
-    )
+    name := "Cloriko",
+    libraryDependencies ++= ProjectDependencies
   )
