@@ -20,14 +20,20 @@ object Dependencies {
     val Mockito = "2.18.3"
     val PureConfig = "0.10.1"
 
-    val monix = "3.0.0"
+    val monix = "2.3.3"
   }
 
   private val MainDependencies = Seq(
+    "io.grpc"                                        % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
+    "com.thesamet.scalapb" %% "scalapb-runtime-grpc"                % scalapb.compiler.Version.scalapbVersion,
+    "com.thesamet.scalapb" %% "scalapb-runtime"                     % scalapb.compiler.Version.scalapbVersion % "protobuf",
+    "beyondthelines"       %% "grpcmonixgenerator"                    % "0.0.7",
+    "com.thesamet.scalapb" %% "compilerplugin"                        % "0.7.0",
+    "beyondthelines" %% "grpcmonixruntime" % "0.0.7",
     "io.getquill" %% "quill-core"                                     % DependencyVersions.QuillVersion,
-    "io.getquill" %% "quill-cassandra-monix"                          % DependencyVersions.QuillVersion,
-    "io.monix" %% "monix"                                             % DependencyVersions.monix,
-    "io.monix" %% "monix-catnap"                                      % DependencyVersions.monix,
+     //"io.getquill" %% "quill-cassandra-monix"                          % DependencyVersions.QuillVersion,
+     "io.monix" %% "monix"                                             % DependencyVersions.monix,
+    //"io.monix" %% "monix-catnap"                                      % DependencyVersions.monix,
     "com.github.pureconfig"       %% "pureconfig"                     % DependencyVersions.PureConfig,
     "com.typesafe.akka"           %% "akka-stream"                    % DependencyVersions.Akka,
     "com.typesafe.akka"           %% "akka-actor"                     % DependencyVersions.Akka,

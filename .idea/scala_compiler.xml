@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ScalaCompilerConfiguration">
-    <profile name="sbt 1" modules="Cloriko,foggy_1304,untitled" />
+    <profile name="sbt 1" modules="foggy_1304,untitled" />
+    <profile name="sbt 2" modules="Cloriko">
+      <parameters>
+        <parameter value="-Ylog-classpath" />
+      </parameters>
+    </profile>
   </component>
 </project>

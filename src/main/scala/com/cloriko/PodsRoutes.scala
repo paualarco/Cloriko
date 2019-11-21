@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.Directives.{ path, _ }
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.directives.MethodDirectives.{ get, post }
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
-import com.cloriko.cassandra.Cassandra
+//import com.cloriko.cassandra.Cassandra
 import com.cloriko.db.CassandraConfig
 
 trait PodsRoutes extends JsonSupport {
@@ -22,7 +22,7 @@ trait PodsRoutes extends JsonSupport {
     10,
     10)
 
-  val cassandra = new Cassandra(cassandraConfig)
+  //val cassandra = new Cassandra(cassandraConfig)
 
   lazy val podRoutes: Route =
 
@@ -33,12 +33,12 @@ trait PodsRoutes extends JsonSupport {
             case podId =>
               get {
                 println(s"Get received with username: $username and podId $podId")
-                cassandra.insertUserPodId(username)
+                //cassandra.insertUserPodId(username)
                 complete(s"Pod  joining to $username cloud")
               }
           }, path("query" / Segment) {
             podId =>
-              cassandra.getUserPods()
+              //cassandra.getUserPods()
               complete("Cassandra query finished")
           },
           path("leave" / Segment) {

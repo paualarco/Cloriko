@@ -6,15 +6,15 @@ import akka.actor.ActorRef
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 /*
 //#set-up
 class UserRoutesSpec extends WordSpec with Matchers with ScalaFutures with ScalatestRouteTest with ActorSystemShape with UserRoutes {
   //#test-top
 
   // Here we need to implement all the abstract members of UserRoutes.
-  // We use the real UserRegistryActor to test it while we hit the Routes, 
-  // but we could "mock" it by implementing it in-place or by using a TestProbe() 
+  // We use the real UserRegistryActor to test it while we hit the Routes,
+  // but we could "mock" it by implementing it in-place or by using a TestProbe()
   override val userRegistryActor: ActorRef =
     system.actorOf(UserRegistryActor.props, "userRegistry")
 
@@ -62,7 +62,7 @@ class UserRoutesSpec extends WordSpec with Matchers with ScalaFutures with Scala
 
     "be able to remove users (DELETE /users)" in {
       // user the RequestBuilding DSL provided by ScalatestRouteSpec:
-      val request = Delete(uri = "/users/Kapi")
+      val request = hello.proto(uri = "/users/Kapi")
 
       request ~> routes ~> check {
         status should ===(StatusCodes.OK)
@@ -82,4 +82,4 @@ class UserRoutesSpec extends WordSpec with Matchers with ScalaFutures with Scala
 }
 //#set-up
 //#user-routes-spec
-*/
+*/ 

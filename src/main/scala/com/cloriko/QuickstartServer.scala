@@ -9,7 +9,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.server.Directives._
-import com.cloriko.cassandra.Cassandra
+//import com.cloriko.cassandra.Cassandra
 import com.cloriko.db.CassandraConfig
 
 object QuickstartServer extends App with ActorSystemShape with UserRoutes with PodsRoutes {

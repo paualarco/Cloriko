@@ -1,7 +1,4 @@
-[error] /Users/pau.alarcon/Documents/open-source/Cloriko/project/Dependencies.scala:23:74: value QuillVersion is not a member of object Dependencies.DependencyVersions
-[error]     "io.getquill" %% "quill-core"                   % DependencyVersions.QuillVersion,
-[error]                                                                          ^
-[error] /Users/pau.alarcon/Documents/open-source/Cloriko/project/Dependencies.scala:24:74: value QuillVersion is not a member of object Dependencies.DependencyVersions
-[error]     "io.getquill" %% "quill-cassandra-monix"        % DependencyVersions.QuillVersion,
-[error]                                                                          ^
-[error] two errors found
+[error] /Users/pau.alarcon/Documents/open-source/Cloriko/project/Dependencies.scala:50:5: not found: value libraryDependencies
+[error]     libraryDependencies += "io.higherkindness" %% "mu-config" % "0.19.1"
+[error]     ^
+[error] one error found

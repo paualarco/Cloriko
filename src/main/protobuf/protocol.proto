@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package com.cloriko.protobuf;
+
+// The greeting service definition.
+service Protocol {
+  // Sends a greeting
+  rpc join (JoinRequest) returns (JoinReply) {}
+  rpc heartbeat (JoinReply) returns (stream HeartBeat) {}
+}
+
+// The request message containing the user's name.
+message JoinRequest {
+  string id = 1;
+  string username = 2;
+  string replica_id = 3;
+}
+
+// The response message containing the greetings
+message JoinReply {
+  string id = 1;
+}
+
+message HeartBeat {
+  string replica_id = 3;
+}
+
+

@@ -1,11 +1,11 @@
 package com.cloriko.cassandra
 
 import java.time.LocalDate
-
-import com.cloriko.db.{CassandraConfig, userpods}
-import com.datastax.driver.core.{Cluster, ConsistencyLevel, QueryOptions}
+/*
+import com.cloriko.db.{ CassandraConfig, userpods }
+import com.datastax.driver.core.{ Cluster, ConsistencyLevel, QueryOptions }
 import com.typesafe.scalalogging.LazyLogging
-import io.getquill.{CassandraMonixContext, SnakeCase}
+import io.getquill.{ CassandraMonixContext, SnakeCase }
 import monix.eval.Task
 import monix.execution.Scheduler
 
@@ -36,7 +36,7 @@ class Cassandra(cassandraConfig: CassandraConfig) extends LazyLogging {
   }
 
   val q = quote {
-    query[userpods].insert(_.username -> "MyName", _.podid -> "1011L", _.name -> "d")
+    //query[userpods].insert(_.username -> "MyName", _.podid -> "1011L", _.name -> "d")
   }
 
   def q2 =
@@ -45,4 +45,4 @@ class Cassandra(cassandraConfig: CassandraConfig) extends LazyLogging {
         query[userpods].insert(lift(userpods("a2", "aa", "v")))
       }
     }
-}
+}*/
