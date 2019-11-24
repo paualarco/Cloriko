@@ -1,5 +1,4 @@
 import io.grpc.ManagedChannelBuilder
-import com.cloriko.protobuf.protocol.{JoinRequest, JoinReply, ProtocolGrpcMonix}
 import monix.eval.Task
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -11,5 +10,5 @@ val obi = Observable.fromIterable(1 to 4)
 
 val consumer: Consumer[Int, Int] = Consumer.foldLeft(0)(_ + _)
 
-val result = Await.result(obi.consumeWith(consumer).runAsync, 3 seconds)
+val result = Await.result(obi.consumeWith(consumer).runAsync, 1 seconds)
 

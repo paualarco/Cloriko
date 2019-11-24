@@ -5,6 +5,7 @@
     <profile name="sbt 2" modules="Cloriko">
       <parameters>
         <parameter value="-Ylog-classpath" />
+        <parameter value="-Ypartial-unification" />
       </parameters>
     </profile>
   </component>

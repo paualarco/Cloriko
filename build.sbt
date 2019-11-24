@@ -25,4 +25,5 @@ PB.targets in Compile := Seq(
 )
 scalacOptions += "-Ylog-classpath"
 resolvers += Resolver.bintrayRepo("beyondthelines", "maven")
+scalacOptions ++= Seq("-Ypartial-unification")
 

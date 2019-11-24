@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package com.cloriko.protobuf;
+
+
+//Slave
+message JoinRequest {
+  string id = 1;
+  string username = 2;
+  string replica_id = 3;
+}
+
+message HeartBeat {
+  string replica_id = 1;
+}
+
+message Overview {
+  string id = 1;
+  Directory slave_content = 2;
+  Directory replicated_content = 3;
+  string space = 4;
+}
+
+message Deleted {
+  string id = 1;
+  string username = 2;
+  string slave_id = 3;
+}
+
+message Updated {
+  string id = 1;
+  string username = 2;
+  string slave_id = 3;
+}
+
+message Failed {
+  string id = 1;
+}
+
+message FileReference {
+  string file_id = 1;
+  string file_name = 2;
+  string path = 3;
+}
+
+message File {
+  string file_id = 1;
+  string file_name = 2;
+  string path = 3;
+  bytes data = 4;
+}
+
+message Directory {
+  string dir_id = 1;
+  string dir_name = 2;
+  string path = 3;
+  repeated Directory directories = 4;
+  repeated FileReference files = 5;
+}
+
+
+
+
+
+
+
+
+
+
