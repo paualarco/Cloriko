@@ -52,7 +52,8 @@ message Update {
 message JoinRequest {
   string id = 1;
   string username = 2;
-  string replica_id = 3;
+  string password = 3;
+  string slave_id = 4;
 }
 
 message HeartBeat {
