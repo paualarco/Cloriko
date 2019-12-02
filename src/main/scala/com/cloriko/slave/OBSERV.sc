@@ -12,3 +12,4 @@ val consumer: Consumer[Int, Int] = Consumer.foldLeft(0)(_ + _)
 
 val result = Await.result(obi.consumeWith(consumer).runAsync, 1 seconds)
 
+obs

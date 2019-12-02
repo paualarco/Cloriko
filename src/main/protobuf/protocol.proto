@@ -10,24 +10,25 @@ service MasterSlaveProtocol {
 
 message MasterRequest {
   oneof sealed_value {
-    OverviewRequest overview_request = 1;
-    Delete delete = 2;
-    Update update = 3;
+    JoinReply join_reply = 1;
+    OverviewRequest overview_request = 2;
+    Delete delete = 3;
+    Update update = 4;
   }
 }
 
 message SlaveResponse {
   oneof sealed_value {
-    JoinReply join_reply = 1;
-    Updated updated = 2;
-    Deleted deleted = 3;
-    Failed failed = 4;
-    HeartBeat heartbeat = 5;
+    Updated updated = 1;
+    Deleted deleted = 2;
+    Failed failed = 3;
+    HeartBeat heartbeat = 4;
   }
 }
 //Master
 message JoinReply {
   string id = 1;
+  bool authenticated = 2;
 }
 
 message OverviewRequest {
@@ -57,7 +58,8 @@ message JoinRequest {
 }
 
 message HeartBeat {
-  string replica_id = 1;
+  string username = 1;
+  string slave_id = 2;
 }
 
 message Overview {

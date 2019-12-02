@@ -20,8 +20,8 @@ object Dependencies {
     val Mockito = "2.18.3"
     val PureConfig = "0.10.1"
 
-    val http4sVersion = "0.20.13"
     val monix = "2.3.3"
+    val circeVersion = "0.11.1"
   }
 
   private val MainDependencies = Seq(
@@ -31,13 +31,8 @@ object Dependencies {
     "beyondthelines"            %% "grpcmonixgenerator"             % "0.0.7",
     "com.thesamet.scalapb"      %% "compilerplugin"                 % "0.7.0",
     "beyondthelines"            %% "grpcmonixruntime"               % "0.0.7",
-    "org.http4s"                %% "http4s-dsl"                     % DependencyVersions.http4sVersion,
-    "org.http4s"                %% "http4s-blaze-server"            % DependencyVersions.http4sVersion,
-    "org.http4s"                %% "http4s-blaze-client"            % DependencyVersions.http4sVersion,
-    "io.getquill"               %% "quill-core"                     % DependencyVersions.QuillVersion,
-     //"io.getquill" %% "quill-cassandra-monix"                          % DependencyVersions.QuillVersion,
      "io.monix"                 %% "monix"                          % DependencyVersions.monix,
-    //"io.monix" %% "monix-catnap"                                      % DependencyVersions.monix,
+    "com.typesafe.akka"         %% "akka-actor-typed"               % DependencyVersions.Akka,
     "com.github.pureconfig"     %% "pureconfig"                     % DependencyVersions.PureConfig,
     "com.typesafe.akka"         %% "akka-stream"                    % DependencyVersions.Akka,
     "com.typesafe.akka"         %% "akka-actor"                     % DependencyVersions.Akka,
@@ -49,7 +44,11 @@ object Dependencies {
     "org.apache.logging.log4j"  %% "log4j-api-scala"                % DependencyVersions.Log4jScala,
     "org.apache.logging.log4j"  % "log4j-api"                       % DependencyVersions.Log4j,
     "org.apache.logging.log4j"  % "log4j-core"                      % DependencyVersions.Log4j,
-    "org.apache.logging.log4j"  % "log4j-slf4j-impl"                % DependencyVersions.Log4j
+    "org.apache.logging.log4j"  % "log4j-slf4j-impl"                % DependencyVersions.Log4j,
+    "com.typesafe.akka"         %% "akka-actor-testkit-typed"       % DependencyVersions.Akka % Test,
+    "io.circe"                  %% "circe-core"                     % DependencyVersions.circeVersion,
+    "io.circe"                  %% "circe-generic"                  % DependencyVersions.circeVersion,
+    "io.circe"                  %% "circe-parser"                   % DependencyVersions.circeVersion
   )
 
   private val TestDependencies = Seq(
@@ -58,7 +57,8 @@ object Dependencies {
     "org.mockito"               %  "mockito-core"                   % DependencyVersions.Mockito,
     "com.typesafe.akka"         %% "akka-testkit"                   % DependencyVersions.Akka,
     "com.typesafe.akka"         %% "akka-stream-testkit"            % DependencyVersions.Akka,
-    "com.typesafe.akka"          %% "akka-http-spray-json"          % DependencyVersions.AkkaHttp
+    "com.typesafe.akka"         %% "akka-http-spray-json"           % DependencyVersions.AkkaHttp,
+    "com.typesafe.akka"         %% "akka-actor-testkit-typed"       % DependencyVersions.Akka
   ).map( _ % Test)
 
   val ProjectDependencies: Seq[ModuleID] = MainDependencies ++ TestDependencies
