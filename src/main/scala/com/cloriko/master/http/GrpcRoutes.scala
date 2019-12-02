@@ -12,8 +12,6 @@ import com.cloriko.master.WebServer.WebServer
 
 trait GrpcRoutes extends GrpcJsonSupport {
   this: WebServer =>
-
-  val userAuthenticator: ActorRef
   val cloriko: ActorRef
 
   implicit val timeout: Timeout // usually we'd obtain the timeout from the system's configuration

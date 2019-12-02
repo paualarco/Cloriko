@@ -21,15 +21,15 @@ object WebServer {
 
   class WebServer extends UserAuthRoutes with GrpcRoutes {
 
+
     implicit val system: ActorSystem = ActorSystem("Cloriko")
     implicit val materializer: ActorMaterializer = ActorMaterializer()
     implicit val executionContext: ExecutionContext = system.dispatcher
     implicit val timeout: Timeout = Timeout(15 seconds)
     lazy val routes: Route = concat(userAuthRoutes, grpcRoutes)
-    val userAuthenticator: ActorRef = system.actorOf(UserAuthenticator.props, "userRegistry")
-    val cloriko: ActorRef = system.actorOf(Cloriko.props(userAuthenticator), "cloriko")
+    val cloriko: ActorRef = system.actorOf(Cloriko.props, "cloriko")
 
-    val host = "0.0.0.0" //0.0.0.0
+    val host = "0.0.0.0"
     val port = 8080
 
     val serverBinding: Future[Http.ServerBinding] = Http().bindAndHandle(routes, host, port)
