@@ -1,13 +1,12 @@
 package com.cloriko.master
 
-import akka.actor.{ActorRef, ActorSystem}
+import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
-import akka.http.scaladsl.server.Directives._
 import akka.util.Timeout
 import com.cloriko.master.grpc.GrpcServer
-import com.cloriko.master.http.{GrpcRoutes, UserAuthRoutes}
+import com.cloriko.master.http.{OperationalRoutes, UserAuthRoutes}
+import akka.http.scaladsl.server.Directives.concat
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
@@ -19,15 +18,14 @@ object WebServer {
     new WebServer
   }
 
-  class WebServer extends UserAuthRoutes with GrpcRoutes {
-
+  class WebServer extends UserAuthRoutes with OperationalRoutes {
 
     implicit val system: ActorSystem = ActorSystem("Cloriko")
     implicit val materializer: ActorMaterializer = ActorMaterializer()
     implicit val executionContext: ExecutionContext = system.dispatcher
     implicit val timeout: Timeout = Timeout(15 seconds)
-    lazy val routes: Route = concat(userAuthRoutes, grpcRoutes)
-    val cloriko: ActorRef = system.actorOf(Cloriko.props, "cloriko")
+    val cloriko: Cloriko = new Cloriko
+    val routes = concat(userAuthRoutes, operationalRoutes)
 
     val host = "0.0.0.0"
     val port = 8080

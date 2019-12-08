@@ -1,7 +1,7 @@
 package com.cloriko.master.http
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import com.cloriko.master.http.UserJsonSupport.{LogInRequest, SignUpRequest}
+import com.cloriko.master.http.UserJsonSupport.{ LogInRequest, SignUpRequest }
 import spray.json.DefaultJsonProtocol._
 
 trait UserJsonSupport extends SprayJsonSupport {

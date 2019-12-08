@@ -5,6 +5,7 @@ object Dependencies {
   object DependencyVersions {
     val QuillVersion = "3.4.6"
 
+    val http4s = "0.20.10"
     val AkkaHttp = "10.1.10"
     val Akka = "2.5.23"
     val AkkaLog4j = "1.6.1"
@@ -48,7 +49,12 @@ object Dependencies {
     "com.typesafe.akka"         %% "akka-actor-testkit-typed"       % DependencyVersions.Akka % Test,
     "io.circe"                  %% "circe-core"                     % DependencyVersions.circeVersion,
     "io.circe"                  %% "circe-generic"                  % DependencyVersions.circeVersion,
-    "io.circe"                  %% "circe-parser"                   % DependencyVersions.circeVersion
+    "io.circe"                  %% "circe-parser"                   % DependencyVersions.circeVersion,
+    "org.http4s"                %% "http4s-server"                  % DependencyVersions.http4s,
+    "org.http4s"                %% "http4s-core"                    % DependencyVersions.http4s,
+    "org.http4s"                %% "http4s-dsl"                     % DependencyVersions.http4s,
+    "org.http4s"                %% "http4s-circe"                   % DependencyVersions.http4s,
+    "org.http4s"                %% "http4s-blaze-server"            % DependencyVersions.http4s
   )
 
   private val TestDependencies = Seq(
@@ -60,6 +66,7 @@ object Dependencies {
     "com.typesafe.akka"         %% "akka-http-spray-json"           % DependencyVersions.AkkaHttp,
     "com.typesafe.akka"         %% "akka-actor-testkit-typed"       % DependencyVersions.Akka
   ).map( _ % Test)
+
 
   val ProjectDependencies: Seq[ModuleID] = MainDependencies ++ TestDependencies
 }

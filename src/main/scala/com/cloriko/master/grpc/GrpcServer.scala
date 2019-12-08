@@ -1,24 +1,19 @@
 package com.cloriko.master.grpc
 
-import akka.actor.{ActorRef, ActorSystem}
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpMethods, HttpRequest, HttpResponse, StatusCodes}
-import com.cloriko.protobuf.protocol.{JoinReply, JoinRequest, _}
-import io.grpc.{Server, ServerBuilder}
+import akka.actor.ActorSystem
+import com.cloriko.protobuf.protocol.{ JoinReply, JoinRequest, _ }
+import io.grpc.{ Server, ServerBuilder }
 import monix.eval.Task
-import monix.reactive.{Observable, OverflowStrategy}
+import monix.reactive.{ Observable, OverflowStrategy }
 import akka.util.Timeout
-import com.cloriko.master.grpc.GrpcServer.SlaveChannel
-import io.circe.generic.auto._
-import io.circe.syntax._
+import com.cloriko.master.Cloriko
+import com.cloriko.master.grpc.GrpcServer.UpdateChannel
 import monix.reactive.observers.Subscriber
 import monix.execution.Scheduler.Implicits.global
 
-import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
-import scala.util.Try
 
-class GrpcServer(localEndPoint: String, cloriko: ActorRef)(implicit actorSystem: ActorSystem) {
+class GrpcServer(localEndPoint: String, cloriko: Cloriko)(implicit actorSystem: ActorSystem) {
 
   implicit lazy val timeout = Timeout(5.seconds)
   private[this] var server: Server = null
@@ -49,45 +44,80 @@ class GrpcServer(localEndPoint: String, cloriko: ActorRef)(implicit actorSystem:
     this
   }
 
-
   private class MasterSlaveProtocolImpl(localEndPoint: String)(implicit actorSystem: ActorSystem) extends ProtocolGrpcMonix.MasterSlaveProtocol {
     override def join(joinRequest: JoinRequest): Task[JoinReply] = {
-      Task.eval{//eval
-        val jsonJoinRequest = joinRequest.asJson.noSpaces
-        println(s"Sending JoinRequest $jsonJoinRequest to $localEndPoint/grpc/joinRequest")
-        val responseFuture: Future[HttpResponse] = Http()(actorSystem).singleRequest(
-          HttpRequest(method = HttpMethods.POST,
-            uri = s"$localEndPoint/grpc/joinRequest",
-            entity = HttpEntity(ContentTypes.`application/json`, joinRequest.asJson.noSpaces))
-        )
-        val maybeResponse: Try[HttpResponse] = Try(Await.result(responseFuture, 5 seconds))
-        val httpResult: HttpResponse = maybeResponse.getOrElse(HttpResponse(StatusCodes.NotFound))
-        httpResult.status match {
-          case StatusCodes.Created  => {
-            println(s"The slave ${joinRequest.slaveId} was joined to the user ${joinRequest.username} cloud")
-            JoinReply(joinRequest.id, true)
-          }
-          case StatusCodes.OK | _ => {
-            println(s"The http join request $joinRequest was failed with status code ${httpResult.status}")
-            JoinReply(joinRequest.id, false)
-          }
+      //eval
+      val JoinRequest(id, username, password, slaveId) = joinRequest
+      cloriko.joinRequest(id, username, password, slaveId).map {
+        case true => {
+          println(s"GrpcServer - Returning JoinReply($id, true)")
+          JoinReply(id, true)
+        }
+        case false => {
+          println(s"GrpcServer - The $joinRequest failed")
+          JoinReply(id, false)
         }
       }
     }
 
-    override def protocol(response: Observable[SlaveResponse]): Observable[MasterRequest] = {
-      println(s"Response received from slave! $response")
-      //val masterRequest: MasterRequest = MasterRequest(MasterRequest.SealedValue.Update(Update("", "", None)))
-      //Observable.fromIterable(1 to 10).map(_ => masterRequest).delayOnNext(1 seconds)
-      Observable.create(OverflowStrategy.Unbounded) { masterRequests: Subscriber.Sync[MasterRequest] =>
-        cloriko ! SlaveChannel("paualarco", "slaveId-1", masterRequests, response)
-        Task.eval(println("Starting protocol at task eval")).runAsync
+    override def updateStream(input: Observable[Updated]): Observable[Update] = {
+      println("Grpc - UpdateStream protocol received!")
+      Observable.create(OverflowStrategy.Unbounded) { masterRequests: Subscriber.Sync[Update] =>
+        input.runAsyncGetFirst.map{
+          case Some(Updated(id, username, slaveId)) => {
+            println(s"Grpc - The first Update event of the flow was caught, username:$username, slaveId:$slaveId")
+            cloriko.registerUpdateChannel(UpdateChannel(username, slaveId, masterRequests, input)).runAsync
+          }
+          case None => println(s"Grpc - failed when getting first Updated event of the flow")
+        }
       }
     }
+
+    /*
+      Observable.create(OverflowStrategy.Unbounded) { masterRequests: Subscriber.Sync[Update] =>
+        input.runAsyncGetFirst.map{
+          case Some(Updated(id, username, slaveId)) => {
+              println(s"Grpc - The first Update event of the flow was caught, username:$username, slaveId:$slaveId")
+              cloriko.registerUpdateChannel(UpdateChannel(username, slaveId, masterRequests, input)).runAsync
+          }
+          case None => println(s"Grpc - failed when getting first Updated event of the flow")
+        }
+      }
+     */
+
+    override def deleteStream(input: Observable[Deleted]): Observable[Delete] = {
+      Observable.create(OverflowStrategy.Unbounded) { masterRequests: Subscriber.Sync[Delete] =>
+        Task.now().runAsync
+        // cloriko.registerUpdateChannel(UpdateChannel("paualarco", "slaveId-1", masterRequests, input)).runAsync
+      }
+    }
+
+    override def overviewStream(input: Observable[Overview]): Observable[OverviewRequest] = {
+      Observable.create(OverflowStrategy.Unbounded) { masterRequests: Subscriber.Sync[OverviewRequest] =>
+        Task.now().runAsync
+        // cloriko.registerUpdateChannel(UpdateChannel("paualarco", "slaveId-1", masterRequests, input)).runAsync
+      }
+    }
+
   }
+
+  /* override def protocol(response: Observable[SlaveResponse]): Observable[MasterRequest] = {
+      println(s"GrpcServer - Response received from slave! $response")
+      //val masterRequest: MasterRequest = MasterRequest(MasterRequest.SealedValue.Update(Update("", "", None)))
+      //Observable.fromIterable(1 to 10).map(_ => masterRequest).delayOnNext(1 seconds)
+
+      Observable.create(OverflowStrategy.Unbounded) { masterRequests: Subscriber.Sync[MasterRequest] =>
+        cloriko.registerSlaveChannel(SlaveChannel("paualarco", "slaveId-1", masterRequests, response)).runAsync
+      }
+    }
+  }*/
 }
 
 object GrpcServer {
-  case class SlaveChannel(username: String, slaveId: String, masterRequests: Subscriber.Sync[MasterRequest], slaveResponses: Observable[SlaveResponse])
+  sealed trait Channel
+  case class UpdateChannel(username: String, slaveId: String, masterRequests: Subscriber.Sync[Update], slaveResponses: Observable[Updated]) extends Channel
+  case class DeleteChannel(username: String, slaveId: String, masterRequests: Subscriber.Sync[Delete], slaveResponses: Observable[Deleted]) extends Channel
+  case class OverviewChannel(username: String, slaveId: String, masterRequests: Subscriber.Sync[OverviewRequest], slaveResponses: Observable[Overview]) extends Channel
+
 }
 

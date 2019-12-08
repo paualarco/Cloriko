@@ -4,8 +4,11 @@ package com.cloriko.protobuf;
 
 // The greeting service definition.
 service MasterSlaveProtocol {
-  rpc join      (JoinRequest) returns (JoinReply) {}
-  rpc protocol  (stream SlaveResponse) returns (stream MasterRequest) {}
+  rpc join (JoinRequest) returns (JoinReply) {}
+  rpc updateStream (stream Updated) returns (stream Update) {}
+  rpc deleteStream (stream Deleted) returns (stream Delete) {}
+  rpc overviewStream (stream Overview) returns (stream OverviewRequest) {}
+  rpc fetchStream (stream FetchResponse) returns (stream FetchRequest) {}
 }
 
 message MasterRequest {
@@ -44,9 +47,10 @@ message Delete{
 }
 
 message Update {
-  string username = 1;
-  string slave_id = 2;
-  File file = 3;
+  string id = 1;
+  string username = 2;
+  string slave_id = 3;
+  File file = 4;
 }
 
 //Slave
@@ -64,7 +68,7 @@ message HeartBeat {
 
 message Overview {
   string id = 1;
-  Directory slave_content = 2;
+  Directory actual_content = 2;
   Directory replicated_content = 3;
   string space = 4;
 }
@@ -106,15 +110,18 @@ message Directory {
   repeated FileReference files = 5;
 }
 
+message FetchRequest {
+  string id = 1;
+  string path = 2;
+}
+
+message FetchResponse {
+  string id = 1;
+  string path = 2;
+  File file = 3;
+}
 
 
-
-//Slave protocol
-//service SlaveProtocol {
- // rpc overview (OverviewRequest) returns (Overview) {}
- // rpc update   (Update)          returns (Updated) {}
- // rpc delete   (Delete)          returns (Deleted) {}
-//}
 
 
 
