@@ -57,22 +57,20 @@ class Slave(username: String) {
 
   def initUpdateFlow(username: String, slaveId: String) = {
     println(s"Slave - Initializing update flow from slave $slaveId to $username cluster")
-    val updated = Updated("0", username, slaveId)
+    val emptyUpdated = Updated("0", username, slaveId)
     //val updateDownstream = stub.updateStream(Observable.fromIterable[Updated](List(updated)))
 
-    val ob = stub.updateStream{
+    val ob = stub.updateStream {
       val obs = Observable.create[Updated](OverflowStrategy.Unbounded) { updateUpstream: Subscriber.Sync[Updated] =>
         println(s"Slave - UpdatedUpStream created: $updateUpstream and actioned")
         updateChannel = Some(SlaveUpdateChannel(username, slaveId, Some(updateUpstream), None))
-        updateUpstream.onNext(updated)
-        //updateCousumer(updateUpstream)
+        updateUpstream.onNext(emptyUpdated)
         Task.now(println("Slave - Running dummy task")).runAsync
       }
       //obs.runAsyncGetFirst
-      println(s"Slave - UpdateStream called, observable created: $obs")
+      println(s"Slave - Update stream protocol called, observable created: $obs")
     obs
     }
-    updateChannel = Some(SlaveUpdateChannel(username, slaveId, None, Some(ob)))
 
     //ob.consumeWith(updateCousumer(updateChannel.get.updateUpstream.get)).runAsync
 

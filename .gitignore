@@ -13,7 +13,7 @@ project/target
 *.class
 *password*
 repositories.sbt
-src/it/test-data/
+master/it/test-data/
 
 .idea/gradle.xml
 .generated/
