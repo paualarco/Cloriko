@@ -100,6 +100,14 @@ class GrpcServer(localEndPoint: String, cloriko: Cloriko)(implicit actorSystem: 
       }
     }
 
+
+    override def fetchStream(input: Observable[FetchResponse]): Observable[FetchRequest] = {
+      Observable.create(OverflowStrategy.Unbounded) { masterRequests: Subscriber.Sync[FetchRequest] =>
+        Task.now().runAsync
+        // cloriko.registerUpdateChannel(UpdateChannel("paualarco", "slaveId-1", masterRequests, input)).runAsync
+      }
+    }
+
   }
 
   /* override def protocol(response: Observable[SlaveResponse]): Observable[MasterRequest] = {
