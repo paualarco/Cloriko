@@ -1,4 +1,4 @@
-package com.cloriko.master
+package com.cloriko
 
 import com.cloriko.protobuf.protocol.Update
 import org.scalacheck.Gen
@@ -9,3 +9,4 @@ trait Generators {
   val genUpdate: Gen[Update] = Update(genString(), genString(), genString(), None)
 
 }
+

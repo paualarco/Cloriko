@@ -1,5 +1,6 @@
 package com.cloriko.master
 
+import com.cloriko.Generators
 import com.cloriko.master.Master.OperationId
 import com.cloriko.protobuf.protocol.Update
 import org.scalatest.concurrent.ScalaFutures

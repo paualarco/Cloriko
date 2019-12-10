@@ -1,12 +1,12 @@
 package com.cloriko.slave
 
-import com.cloriko.protobuf.protocol.{JoinReply, JoinRequest, ProtocolGrpcMonix, Update, Updated}
+import com.cloriko.protobuf.protocol.{ JoinReply, JoinRequest, ProtocolGrpcMonix, Update, Updated }
 import io.grpc.ManagedChannelBuilder
 import monix.eval.Task
 import monix.execution.Cancelable
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.observers.Subscriber
-import monix.reactive.{Consumer, Observable, OverflowStrategy}
+import monix.reactive.{ Consumer, Observable, OverflowStrategy }
 
 class Slave(username: String) {
   val slaveId = "randomSlaveId"
@@ -23,13 +23,12 @@ class Slave(username: String) {
     println(s"Slave - Received join request at slave: $slaveId of user: $username")
     val joinReply: Task[JoinReply] = stub.join(JoinRequest("id1", username, password, slaveId))
     joinReply.map { reply =>
-      if(reply.authenticated) {
+      if (reply.authenticated) {
         println(s"Slave - JoinRequest accepted for user!")
         initUpdateFlow(username, slaveId)
         //todo check that all flows were correctly initialized
         true
-      }
-      else {
+      } else {
         println("Slave - JoinRequest rejected")
         false
       }
@@ -38,16 +37,18 @@ class Slave(username: String) {
 
   val updateCousumer: Subscriber.Sync[Updated] => Consumer.Sync[Update, Unit] = { updateUpstream =>
     println("Slave - Starting update consumer")
-    Consumer.foreach[Update]{ update =>
+    Consumer.foreach[Update] { update =>
       println(s"Slave - Update received: $update, returning Updated event, updatedUpstream used: $updateUpstream")
-      updateUpstream.onNext(Updated(update.id, username, slaveId)) }
+      updateUpstream.onNext(Updated(update.id, username, slaveId))
+    }
   }
 
   val updateCousumerFromObserver: (Observable[Update], Subscriber.Sync[Updated]) => Cancelable = { (observable, updateUpstream) =>
     println("Slave - Starting update consumer")
-    val consumer = Consumer.foreach[Update]{ update =>
+    val consumer = Consumer.foreach[Update] { update =>
       println(s"Slave - Update received: $update, returning Updated event, updatedUpstream used: $updateUpstream")
-      updateUpstream.onNext(Updated(update.id, username, slaveId)) }
+      updateUpstream.onNext(Updated(update.id, username, slaveId))
+    }
     observable.consumeWith(consumer).runAsync
   }
 
@@ -69,22 +70,21 @@ class Slave(username: String) {
       }
       //obs.runAsyncGetFirst
       println(s"Slave - Update stream protocol called, observable created: $obs")
-    obs
+      obs
     }
 
     //ob.consumeWith(updateCousumer(updateChannel.get.updateUpstream.get)).runAsync
 
     val consumerStarter: Task[Update] = ob.consumeWith(Consumer.head[Update])
     println("Checkpoint print")
-     consumerStarter.runAsync.onSuccess {
-       case _: Update => {
-         val currentUpdatedUpstream = updateChannel.get.updateUpstream.get
-         println(s"Slave - Starting to consume update events from updateUpstream ${updateChannel.get.updateUpstream.get}")
-         ob.consumeWith(updateCousumer(currentUpdatedUpstream)).runAsync
-       }
-       case _ => println("Slave - Update consumer not started... SOmething failed")
-     }
-
+    consumerStarter.runAsync.onSuccess {
+      case _: Update => {
+        val currentUpdatedUpstream = updateChannel.get.updateUpstream.get
+        println(s"Slave - Starting to consume update events from updateUpstream ${updateChannel.get.updateUpstream.get}")
+        ob.consumeWith(updateCousumer(currentUpdatedUpstream)).runAsync
+      }
+      case _ => println("Slave - Update consumer not started... SOmething failed")
+    }
 
     //    Await.result(obs.consumeWith(printConsumer).runAsync, 10 seconds)
 

@@ -100,7 +100,6 @@ class GrpcServer(localEndPoint: String, cloriko: Cloriko)(implicit actorSystem: 
       }
     }
 
-
     override def fetchStream(input: Observable[FetchResponse]): Observable[FetchRequest] = {
       Observable.create(OverflowStrategy.Unbounded) { masterRequests: Subscriber.Sync[FetchRequest] =>
         Task.now().runAsync
