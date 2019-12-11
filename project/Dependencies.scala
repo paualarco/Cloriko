@@ -47,7 +47,8 @@ object Dependencies {
     "org.http4s"                %% "http4s-core"                    % DependencyVersions.Http4s,
     "org.http4s"                %% "http4s-dsl"                     % DependencyVersions.Http4s,
     "org.http4s"                %% "http4s-circe"                   % DependencyVersions.Http4s,
-    "org.http4s"                %% "http4s-blaze-server"            % DependencyVersions.Http4s
+    "org.http4s"                %% "http4s-blaze-server"            % DependencyVersions.Http4s,
+    "commons-io" % "commons-io" % "2.4"
   )
 
   private val TestDependencies = Seq(
@@ -57,7 +58,9 @@ object Dependencies {
     "com.typesafe.akka"         %% "akka-testkit"                   % DependencyVersions.Akka,
     "com.typesafe.akka"         %% "akka-stream-testkit"            % DependencyVersions.Akka,
     "com.typesafe.akka"         %% "akka-http-spray-json"           % DependencyVersions.AkkaHttp,
-    "com.typesafe.akka"         %% "akka-actor-testkit-typed"       % DependencyVersions.Akka
+    "com.typesafe.akka"         %% "akka-actor-testkit-typed"       % DependencyVersions.Akka,
+  "commons-io" % "commons-io" % "2.4"
+
   ).map( _ % Test)
 
 

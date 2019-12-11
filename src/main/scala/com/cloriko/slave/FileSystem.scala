@@ -3,10 +3,7 @@ package com.cloriko.slave
 import java.io.{File, FileOutputStream}
 
 import com.cloriko.protobuf.protocol.{Directory, FileReference, File => SlaveFile}
-import com.google.protobuf.ByteString
 import monix.eval.Task
-import monix.execution.Scheduler.Implicits.global
-
 import scala.util.{Failure, Success, Try}
 
 object FileSystem {
@@ -23,29 +20,28 @@ object FileSystem {
   }
 
   def createDir(dirPath: String): Boolean = {
-    val dir: File = new File(dirPath)
-    if (!dir.exists()) {
-      println(s"FileSystem - Created dir $dirPath ")
-      dir.mkdirs()
+    if(dirPath.startsWith(`./root`)) {
+      val dir: File = new File(dirPath)
+      val created = dir.mkdirs() //it returns false if the file already existed
+      if (created)  println(s"FileSystem - Created dir $dirPath ")
+      else println(s"FileSystem - The dir $dirPath was already created")
+      created
     } else {
-      println(s"FileSystem - The dir $dirPath already existed")
+      println(s"FileSystem - The dir was not created since the path $dirPath does not start by ${`./root`}")
       false
     }
   }
 
   def createFile(slaveFile: SlaveFile): Task[Boolean] = {
     Task.eval {
-      println()
       val dirPath = `./root` + slaveFile.path
       val filePath = dirPath + `/` + slaveFile.fileId + "~" + slaveFile.fileName
       val file: File = new File(filePath)
       if (!file.exists()) {
         createDir(dirPath)
         Try {
-          val str = "Hello World!"
           val outputStream: FileOutputStream = new FileOutputStream(filePath)
-          val strToBytes: Array[Byte] = str.getBytes()
-          outputStream.write(strToBytes)
+          outputStream.write(slaveFile.data.toByteArray)
           outputStream.close()
         } match {
           case Failure(exception) => {
@@ -64,34 +60,31 @@ object FileSystem {
     }
   }
 
-  //todo fix
   def delete(path: String): Boolean = {
-    if(path!="/") {
+    if(path.startsWith(`./root`)) {
       val file: File = new File(path)
       if (!file.exists()) {
-        println(s"FileSystem - $path was alredy deleted")
+        println(s"FileSystem - The path $path that was supposed to be deleted, did not existed")
         true
       } else {
-        file.delete()
-        println(s"FileSystem - Deleted $path")
-        false
+        val deleted = file.delete()
+        println(s"FileSystem - Deleted $path, deleted response $deleted")
+        true
       }
     } else {
-      println(s"FileSystem - No permission to remove path:$path ")
+      println(s"The dir $path since there is no permissions to perform deletes outside of ${`./root`}")
       false
     }
   }
 
-  //todo fix
-  def deleteDir(directory: Directory) = {
+  def deleteDir(directory: Directory): Task[Boolean] = {
     Task.eval {
-      val dirPath = `./root` + directory.path + / + directory.dirName
+      val dirPath: String = `./root` + directory.path + / + directory.dirName
       delete(dirPath)
     }
   }
 
-  //todo fix
-  def deleteFile(file: SlaveFile) = {
+  def deleteFile(file: SlaveFile): Task[Boolean] = {
     Task.eval {
       val dirPath = `./root` + file.path + / + file.fileId + "~" + file.fileName
       delete(dirPath)
