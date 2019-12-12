@@ -3,7 +3,10 @@ package com.cloriko.slave
 import java.io.{File, FileOutputStream}
 
 import com.cloriko.protobuf.protocol.{Directory, FileReference, File => SlaveFile}
+import com.google.protobuf.ByteString
 import monix.eval.Task
+import java.nio.file.{Files, Paths}
+
 import scala.util.{Failure, Success, Try}
 
 object FileSystem {
@@ -60,16 +63,38 @@ object FileSystem {
     }
   }
 
-  def delete(path: String): Boolean = {
-    if(path.startsWith(`./root`)) {
-      val file: File = new File(path)
+  def delete(file: File): Boolean = {
+    val filePath: String = file.getPath
+    if (filePath.startsWith(`./root`)) {
       if (!file.exists()) {
-        println(s"FileSystem - The path $path that was supposed to be deleted, did not existed")
-        true
+        println(s"FileSystem - The file $filePath that was supposed to be deleted, did not existed")
+        false
       } else {
         val deleted = file.delete()
-        println(s"FileSystem - Deleted $path, deleted response $deleted")
-        true
+        println(s"FileSystem - Deleted $filePath, deleted response $deleted")
+        deleted
+      }
+    } else {
+      println(s"The file $filePath can not be deleted since there is no permissions to perform deletes outside of ${`./root`}")
+      false
+    }
+  }
+
+  def deleteDirRecursively(dir: File): Boolean = {
+    val path = dir.getPath
+    if (dir.getPath.contains(`./root`)) {
+      if (dir.exists()) {
+        var subFiles = dir.listFiles()
+        if(subFiles==null) subFiles = Array()
+        println(s"FileSystem - The directory $path to be deleted is not empty, deleting subdirectories first...")
+        val subFilesDeleted = subFiles.foldLeft(true)((deleted: Boolean, subDir: File) => deleted  && deleteDirRecursively(subDir))
+        //subFiles.foreach(_ => deleteDirRecursively(_))
+        val deleted = dir.delete() && subFilesDeleted
+        println(s"FileSystem - Deleted $path, recursive deletetion response $deleted")
+        deleted
+      } else {
+        println(s"FileSystem - The path $path that was supposed to be deleted does not exist")
+        false
       }
     } else {
       println(s"The dir $path since there is no permissions to perform deletes outside of ${`./root`}")
@@ -80,19 +105,36 @@ object FileSystem {
   def deleteDir(directory: Directory): Task[Boolean] = {
     Task.eval {
       val dirPath: String = `./root` + directory.path + / + directory.dirName
-      delete(dirPath)
+      val dir = new File(dirPath)
+      if (dir.isFile) {
+        deleteDirRecursively(dir)
+      } else { //todo test
+        println(s"FileSyetem - The given slave file was not actually a file, path $dirPath ")
+        false
+      }
     }
   }
 
-  def deleteFile(file: SlaveFile): Task[Boolean] = {
+  def deleteFile(slaveFile: SlaveFile): Task[Boolean] = {
     Task.eval {
-      val dirPath = `./root` + file.path + / + file.fileId + "~" + file.fileName
-      delete(dirPath)
+      val filePath = `./root` + slaveFile.path + / + slaveFile.fileId + "~" + slaveFile.fileName
+      val file = new File(filePath)
+      if(file.isFile){
+        delete(file)
+      } else { //todo test
+        println(s"FileSyetem - The given slave file was not actually a file, path $filePath ")
+        false
+      }
     }
   }
 
-  //todo
+  def scanFile(fileRef: FileReference): SlaveFile = {
+    println("FileSystem - Scanning file")
+    val bytes: Array[Byte] = Files.readAllBytes(Paths.get(fileRef.absolutePath))
+    fileRef.asSlaveFile(ByteString.copyFrom(bytes))
+  }
 
+  //todo yet
   def moveDir(directory: Directory, newPath: String): Unit = ???
 
   def moveFile(file: FileReference, newPath: String): Unit = ???

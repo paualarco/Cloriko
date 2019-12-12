@@ -4,11 +4,16 @@
 .idea/libraries
 .idea/libraries
 target/
+target/*
+target/streams
+target/streams/*
 project/target
 logs/
 .coverage
 .cache
 project/target
+project/target/*
+
 /dist
 *.class
 *password*
