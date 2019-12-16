@@ -4,16 +4,21 @@
 .idea/libraries
 .idea/libraries
 target/
+target/*
+target/streams
+target/streams/*
 project/target
 logs/
 .coverage
 .cache
 project/target
+project/target/*
+
 /dist
 *.class
 *password*
 repositories.sbt
-src/it/test-data/
+master/it/test-data/
 
 .idea/gradle.xml
 .generated/

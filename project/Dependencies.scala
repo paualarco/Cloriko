@@ -3,13 +3,14 @@ import sbt._
 object Dependencies {
 
   object DependencyVersions {
-    val QuillVersion = "3.4.6"
-
+    val PureConfig = "0.10.1"
+    val Monix = "2.3.3"
+    val Circe = "0.11.1"
+    val Http4s = "0.20.10"
     val AkkaHttp = "10.1.10"
     val Akka = "2.5.23"
     val AkkaLog4j = "1.6.1"
     val AkkaStreamCassandra = "1.1.1"
-    val DatastaxDriverExtras = "3.3.0"
     val TypesafeConfig = "1.3.2"
 
     val Log4jScala = "11.0"
@@ -18,10 +19,6 @@ object Dependencies {
     val Scalatest = "3.0.4"
     val Scalacheck = "1.13.5"
     val Mockito = "2.18.3"
-    val PureConfig = "0.10.1"
-
-    val monix = "2.3.3"
-    val circeVersion = "0.11.1"
   }
 
   private val MainDependencies = Seq(
@@ -31,7 +28,7 @@ object Dependencies {
     "beyondthelines"            %% "grpcmonixgenerator"             % "0.0.7",
     "com.thesamet.scalapb"      %% "compilerplugin"                 % "0.7.0",
     "beyondthelines"            %% "grpcmonixruntime"               % "0.0.7",
-     "io.monix"                 %% "monix"                          % DependencyVersions.monix,
+    "io.monix"                 %% "monix"                           % DependencyVersions.Monix,
     "com.typesafe.akka"         %% "akka-actor-typed"               % DependencyVersions.Akka,
     "com.github.pureconfig"     %% "pureconfig"                     % DependencyVersions.PureConfig,
     "com.typesafe.akka"         %% "akka-stream"                    % DependencyVersions.Akka,
@@ -39,16 +36,21 @@ object Dependencies {
     "com.typesafe.akka"         %% "akka-http-spray-json"           % DependencyVersions.AkkaHttp,
     "de.heikoseeberger"         %% "akka-log4j"                     % DependencyVersions.AkkaLog4j,
     "com.typesafe"              % "config"                          % DependencyVersions.TypesafeConfig,
-    "com.lightbend.akka"        %% "akka-stream-alpakka-cassandra"  % DependencyVersions.AkkaStreamCassandra,
-    "com.datastax.cassandra"    % "cassandra-driver-extras"         % DependencyVersions.DatastaxDriverExtras,
     "org.apache.logging.log4j"  %% "log4j-api-scala"                % DependencyVersions.Log4jScala,
     "org.apache.logging.log4j"  % "log4j-api"                       % DependencyVersions.Log4j,
     "org.apache.logging.log4j"  % "log4j-core"                      % DependencyVersions.Log4j,
     "org.apache.logging.log4j"  % "log4j-slf4j-impl"                % DependencyVersions.Log4j,
-    "com.typesafe.akka"         %% "akka-actor-testkit-typed"       % DependencyVersions.Akka % Test,
-    "io.circe"                  %% "circe-core"                     % DependencyVersions.circeVersion,
-    "io.circe"                  %% "circe-generic"                  % DependencyVersions.circeVersion,
-    "io.circe"                  %% "circe-parser"                   % DependencyVersions.circeVersion
+    "io.circe"                  %% "circe-core"                     % DependencyVersions.Circe,
+    "io.circe"                  %% "circe-generic"                  % DependencyVersions.Circe,
+    "io.circe"                  %% "circe-parser"                   % DependencyVersions.Circe,
+    "org.http4s"                %% "http4s-server"                  % DependencyVersions.Http4s,
+    "org.http4s"                %% "http4s-core"                    % DependencyVersions.Http4s,
+    "org.http4s"                %% "http4s-dsl"                     % DependencyVersions.Http4s,
+    "org.http4s"                %% "http4s-circe"                   % DependencyVersions.Http4s,
+    "org.http4s"                %% "http4s-blaze-server"            % DependencyVersions.Http4s,
+    "commons-io"                % "commons-io"                      % "2.4",
+    "org.scalacheck"            %% "scalacheck"                     % DependencyVersions.Scalacheck
+
   )
 
   private val TestDependencies = Seq(
@@ -58,8 +60,11 @@ object Dependencies {
     "com.typesafe.akka"         %% "akka-testkit"                   % DependencyVersions.Akka,
     "com.typesafe.akka"         %% "akka-stream-testkit"            % DependencyVersions.Akka,
     "com.typesafe.akka"         %% "akka-http-spray-json"           % DependencyVersions.AkkaHttp,
-    "com.typesafe.akka"         %% "akka-actor-testkit-typed"       % DependencyVersions.Akka
+    "com.typesafe.akka"         %% "akka-actor-testkit-typed"       % DependencyVersions.Akka,
+  "commons-io" % "commons-io" % "2.4"
+
   ).map( _ % Test)
+
 
   val ProjectDependencies: Seq[ModuleID] = MainDependencies ++ TestDependencies
 }

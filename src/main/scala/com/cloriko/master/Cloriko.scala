@@ -1,69 +1,70 @@
 package com.cloriko.master
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Props}
-import com.cloriko.protobuf.protocol.{Deleted, HeartBeat, JoinReply, JoinRequest, MasterRequest, SlaveResponse, Updated}
-import akka.pattern.ask
 import akka.util.Timeout
-import com.cloriko.master.Cloriko.Greeter
-import com.cloriko.master.Master.RegisterSlave
-import com.cloriko.master.UserAuthenticator.{LogInResponse, UserAuthenticated, UserNotExists, UserRejected}
-import com.cloriko.master.grpc.GrpcServer.SlaveChannel
-import com.cloriko.master.http.UserJsonSupport.LogInRequest
-import monix.reactive.Observable
-import monix.reactive.observers.Subscriber
+import com.cloriko.master.grpc.GrpcServer.UpdateChannel
+import com.cloriko.protobuf.protocol.Update
+import monix.eval.Task
+import monix.execution.Scheduler.Implicits.global
 
-import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
 
-class Cloriko(userAuthenticator: ActorRef) extends Actor with ActorLogging {
+class Cloriko {
   implicit lazy val timeout = Timeout(2 seconds)
-  var masters: Map[String, ActorRef] = Map() //username -> Master ActorRef
+  var masters: Map[String, Master] = Map() //username -> Master ActorRef
 
-  def receive: Receive = {
-    case JoinRequest(id, username, password, slaveId) => {
-      val grpcHttpRef = sender() //the sender is not recongnised within onsuccess
-      println(s"Sender: ${sender().path}")
-      val futureAuthentication: Future[_] = (userAuthenticator ? LogInRequest(username, password)).mapTo[LogInResponse]
-      futureAuthentication.onSuccess {
-        //_ match {
-          case _: UserAuthenticated => {
-            log.info(s"JoinRequest accepted, master created for user: $username")
-            val master: ActorRef = context.actorOf(Master.props(username), "master")
+  def joinRequest(id: String, username: String, password: String, slaveId: String): Task[Boolean] = {
+    val futureAuthentication = UserAuthenticator.authenticate(username, password)
+    futureAuthentication.map {
+      case true => {
+        masters.get(username) match {
+          case Some(master) => {
+            println(s"Cloriko Info - Created master for user $username")
+            master.registerSlave(slaveId).runAsync
+          }
+          case None => {
+            println(s"Cloriko Debug - Master already existed for user $username")
+            val master: Master = new Master(username)
             masters = masters.updated(username, master)
-            master ! RegisterSlave(slaveId)
-            grpcHttpRef ! JoinReply(id, true)
-            println(s"Sender: ${grpcHttpRef.path}")
+            master.registerSlave(slaveId).runAsync
           }
-          case _: UserNotExists => {
-            log.info(s"JoinRequest denied since username $username did not exist")
-            grpcHttpRef ! JoinReply(id, false)
-          }
-          case _: UserRejected => {
-            log.info(s"JoinRequest rejected since password was incorrenct username $username ")
-            grpcHttpRef ! JoinReply(id, false)
-          }
+        }
+        true //todo check if the slave was already part of the quorum
+      }
+      case false => {
+        println(s"JoinRequest denied since username $username did not exist")
+        false
+      }
+      case _ => {
+        println(s"JoinRequest rejected since password was incorrenct username $username ")
+        false
       }
     }
+  }
 
-    case slaveChannel: SlaveChannel => {
-      log.info("Slave chanel subscription received at Cloriko")
+  def registerUpdateChannel(slaveChannel: UpdateChannel): Task[Boolean] = {
+    Task.eval {
+      println("Cloriko - Slave chanel subscription received")
       masters.get(slaveChannel.username) match {
         case Some(master) => {
-          log.info(s"Sending $slaveChannel from ${slaveChannel.slaveId} at master of ${slaveChannel.username}")
-          master ! slaveChannel
+          println(s"Cloriko - Sending $slaveChannel from ${slaveChannel.slaveId} at master of ${slaveChannel.username}")
+          master.registerUpdateChannel(slaveChannel).runAsync
+          true
         }
-        case None => log.info(s"Master not found for slaveChannel of ${slaveChannel.username} and ${slaveChannel.slaveId} ")
+        case None => println(s"Cloriko - Master not found for slaveChannel of ${slaveChannel.username} and ${slaveChannel.slaveId} "); false
       }
     }
-    case Greeter() => println("Greeter received :)")
-    case HeartBeat(username, _) => println("Heartbeat test received!")
-    case Updated(_, username, _) =>
-    case Deleted(_, username, _) =>
   }
-}
 
-object Cloriko {
-  def props(userAuthenticator: ActorRef) = Props(new Cloriko(userAuthenticator))
-  case class Greeter()
+  def dispatchUpdateToMaster(updateOp: Update): Task[Boolean] = {
+    masters.get(updateOp.username) match {
+      case Some(master) => {
+        println(s"Cloriko -  Update operation being sent to master of username: ${updateOp.username}")
+        master.performUpdateOp(updateOp)
+      }
+      case None => {
+        println(s"Cloriko - Update op of user ${updateOp.username} not delivered since master was not found")
+        Task.now(false)
+      }
+    }
+  }
 }

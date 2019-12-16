@@ -1,4 +1,4 @@
-[error] /Users/pau.alarcon/Documents/open-source/Cloriko/project/Dependencies.scala:36:45: not found: value http4sVersion
-[error]     "org.http4s" %% "http4s-blaze-client" % http4sVersion,
-[error]                                             ^
+[error] /Users/pau.alarcon/Documents/open-source/Cloriko/project/Dependencies.scala:36:90: value moni is not a member of object Dependencies.DependencyVersions
+[error]      "io.monix"                 %% "monix"                          % DependencyVersions.moni,
+[error]                                                                                          ^
 [error] one error found
