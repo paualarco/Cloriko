@@ -3,6 +3,7 @@ package com.cloriko
 import com.cloriko.protobuf.protocol.{File, Update}
 import com.google.protobuf.ByteString
 import org.scalacheck.Gen
+
 trait Generators {
 
   val genRange: Int => Int = range => Gen.chooseNum(1, range).sample.get
@@ -22,4 +23,3 @@ trait Generators {
   val generatePath: () => String = () => (1 to genRange(5)).foldLeft("") { case (path, _) => path + "/" + genString(7) }
   val genSlaveFile: () => File = () => File(genFileId(), genFileName(), generatePath() , genByteString(50))
 }
-

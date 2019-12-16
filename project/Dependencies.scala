@@ -48,7 +48,9 @@ object Dependencies {
     "org.http4s"                %% "http4s-dsl"                     % DependencyVersions.Http4s,
     "org.http4s"                %% "http4s-circe"                   % DependencyVersions.Http4s,
     "org.http4s"                %% "http4s-blaze-server"            % DependencyVersions.Http4s,
-    "commons-io" % "commons-io" % "2.4"
+    "commons-io"                % "commons-io"                      % "2.4",
+    "org.scalacheck"            %% "scalacheck"                     % DependencyVersions.Scalacheck
+
   )
 
   private val TestDependencies = Seq(

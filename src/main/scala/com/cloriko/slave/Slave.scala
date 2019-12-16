@@ -43,13 +43,28 @@ class Slave(username: String) {
     }
   }
 
-  val updateCousumerFromObserver: (Observable[Update], Subscriber.Sync[Updated]) => Cancelable = { (observable, updateUpstream) =>
-    println("Slave - Starting update consumer")
-    val consumer = Consumer.foreach[Update] { update =>
-      println(s"Slave - Update received: $update, returning Updated event, updatedUpstream used: $updateUpstream")
-      updateUpstream.onNext(Updated(update.id, username, slaveId))
-    }
-    observable.consumeWith(consumer).runAsync
+  val updateCousumerFromObserver: (Observable[Update], Subscriber.Sync[Updated]) => Cancelable = {
+    (observable: Observable[Update], updateUpstream: Subscriber.Sync[Updated]) =>
+      println("Slave - Starting update consumer")
+      val consumer = Consumer.foreach[Update] { update =>
+        update.file match { //todo delete optional File field
+          case Some(file) => {
+            FileSystem.createFile(file).runAsync.onSuccess {
+              case true => {
+                updateUpstream.onNext(Updated(update.id, username, slaveId))
+                println(s"Slave - Update received: $update, returning Updated event, updatedUpstream used: $updateUpstream")
+
+              }
+              case false => println(s"There was a failure during the creation of file from update: ${update.id} at slave $slaveId")
+            }
+          }
+          case None => {
+            println(s"Slave - Update file ${update.id} was empty... dir to do for ${slaveId} ")
+            updateUpstream.onNext(Updated(update.id, username, slaveId))
+          }
+        }
+      }
+      observable.consumeWith(consumer).runAsync
   }
 
   val printConsumer: Consumer[Update, Unit] = {
@@ -81,7 +96,8 @@ class Slave(username: String) {
       case _: Update => {
         val currentUpdatedUpstream = updateChannel.get.updateUpstream.get
         println(s"Slave - Starting to consume update events from updateUpstream ${updateChannel.get.updateUpstream.get}")
-        ob.consumeWith(updateCousumer(currentUpdatedUpstream)).runAsync
+        updateCousumerFromObserver(ob, currentUpdatedUpstream)
+        //ob.consumeWith(updateCousumer(currentUpdatedUpstream)).runAsync
       }
       case _ => println("Slave - Update consumer not started... SOmething failed")
     }

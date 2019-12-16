@@ -92,7 +92,6 @@ class Master(username: String) {
             //slaves.get(updated.slaveId).get.updateTrace.updateChannel.get.updateUpStream.onNext(Update("update1", "paualarco", updated.slaveId, None))
           }
         }
-
         //updateUpstream.onNext(Update("update1", "paualarco", u.slaveId, None))
       })
   }

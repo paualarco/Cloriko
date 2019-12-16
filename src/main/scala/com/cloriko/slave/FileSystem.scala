@@ -134,6 +134,7 @@ object FileSystem {
     fileRef.asSlaveFile(ByteString.copyFrom(bytes))
   }
 
+  val emptyFile: ByteString = ByteString.EMPTY
   //todo yet
   def moveDir(directory: Directory, newPath: String): Unit = ???
 
