@@ -19,20 +19,9 @@ class Slave(username: String) {
 
   val stub = ProtocolGrpcMonix.stub(channel) // only an async stub is provided
 
-  def joinRequestCloriko(password: String): Task[Boolean] = {
+  def joinRequestCloriko(password: String): Task[JoinReply] = {
     println(s"Slave - Received join request at slave: $slaveId of user: $username")
-    val joinReply: Task[JoinReply] = stub.join(JoinRequest("id1", username, password, slaveId))
-    joinReply.map { reply =>
-      if (reply.authenticated) {
-        println(s"Slave - JoinRequest accepted for user!")
-        initUpdateFlow(username, slaveId)
-        //todo check that all flows were correctly initialized
-        true
-      } else {
-        println("Slave - JoinRequest rejected")
-        false
-      }
-    }
+    stub.join(JoinRequest("id1", username, password, slaveId))
   }
 
   val updateCousumer: Subscriber.Sync[Updated] => Consumer.Sync[Update, Unit] = { updateUpstream =>
@@ -76,7 +65,7 @@ class Slave(username: String) {
     val emptyUpdated = Updated("0", username, slaveId)
     //val updateDownstream = stub.updateStream(Observable.fromIterable[Updated](List(updated)))
 
-    val ob = stub.updateStream {
+    val ob = stub.channel {
       val obs = Observable.create[Updated](OverflowStrategy.Unbounded) { updateUpstream: Subscriber.Sync[Updated] =>
         println(s"Slave - UpdatedUpStream created: $updateUpstream and actioned")
         updateChannel = Some(SlaveUpdateChannel(username, slaveId, Some(updateUpstream), None))

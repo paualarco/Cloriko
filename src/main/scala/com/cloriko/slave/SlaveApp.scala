@@ -2,10 +2,13 @@ package com.cloriko.slave
 
 import cats.implicits._
 import org.http4s.HttpRoutes
-import cats.effect.{IO, IOApp, ExitCode}
-import org.http4s.dsl.io._, org.http4s.implicits._
+import cats.effect.{ ExitCode, IO, IOApp }
+import org.http4s.dsl.io._
+import org.http4s.implicits._
 import org.http4s.server.blaze._
 import monix.execution.Scheduler.Implicits.global
+
+import scala.concurrent.Future
 
 object SlaveApp extends IOApp {
 
@@ -13,15 +16,17 @@ object SlaveApp extends IOApp {
     case GET -> Root / "joinRequest" / username / password => {
       Ok(
         IO.fromFuture {
-          IO(
-            Slave(username).joinRequestCloriko(password).runAsync.map {
-              case true => {
-                s"Slave joined successfully and grpc protocol initialized with $username's cloriko."
-              }
-              case false => {
-                s"Slave joined successfully and grpc protocol initialized with $username's cloriko."
-              }
-            })
+          IO {
+            val slave = Slave(username)
+            slave.joinRequestCloriko(password).runAsync.map {
+              reply =>
+                if (reply.authenticated) {
+                  slave.initUpdateFlow(username, slave.slaveId)
+                  //todo check that all flows were correctly initialized
+                  s"Slave joined successfully and grpc protocol initialized with $username's cloriko."
+                } else s"Slave - JoinRequest rejected from user $username"
+            }
+          }
         })
     }
   }.orNotFound

@@ -1,6 +1,5 @@
 package com.cloriko.master
 
-import com.cloriko.master.Master.OperationId
 import com.cloriko.master.grpc.GrpcServer.{ DeleteChannel, OverviewChannel, UpdateChannel }
 import com.cloriko.protobuf.protocol._
 import monix.eval.Task

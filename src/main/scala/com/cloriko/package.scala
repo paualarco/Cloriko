@@ -1,7 +1,7 @@
 package com
 
-import com.cloriko.protobuf.protocol.{Directory, File, FileReference}
-import com.cloriko.slave.FileSystem.{/, `./root`}
+import com.cloriko.protobuf.protocol.{ Directory, File, FileReference }
+import com.cloriko.slave.FileSystem.{ /, `./root` }
 import com.google.protobuf.ByteString
 
 import scala.language.implicitConversions
@@ -25,6 +25,5 @@ package object cloriko {
       File(fileRef.fileId, fileRef.fileName, fileRef.path, data)
     }
   }
-
 
 }

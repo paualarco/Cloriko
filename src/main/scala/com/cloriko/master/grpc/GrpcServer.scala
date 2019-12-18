@@ -60,12 +60,12 @@ class GrpcServer(localEndPoint: String, cloriko: Cloriko)(implicit actorSystem: 
       }
     }
 
-    override def updateStream(input: Observable[Updated]): Observable[Update] = {
+    override def updateStream(input: Observable[SlaveResponse]): Observable[MasterRequest] = {
       println("Grpc - UpdateStream protocol received!")
       val updatedDownstream = input
-      Observable.create(OverflowStrategy.Unbounded) { updateUpStream: Subscriber.Sync[Update] =>
+      Observable.create(OverflowStrategy.Unbounded) { updateUpStream: Subscriber.Sync[MasterRequest] =>
         updatedDownstream.runAsyncGetFirst.map { //Updated used for starting, this is also causing to trigger two observables
-          case Some(Updated(id, username, slaveId)) => {
+          case Some(slaveResponse: SlaveResponse) => {
             println(s"Grpc - The first Update event of the flow was caught, username:$username, slaveId:$slaveId")
             cloriko.registerUpdateChannel(UpdateChannel(username, slaveId, updateUpStream, updatedDownstream)).runAsync
           }

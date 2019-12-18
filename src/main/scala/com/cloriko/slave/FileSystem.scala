@@ -1,19 +1,19 @@
 package com.cloriko.slave
 
-import java.io.{File, FileOutputStream}
+import java.io.{ File, FileOutputStream }
 
-import com.cloriko.protobuf.protocol.{Directory, FileReference, File => SlaveFile}
+import com.cloriko.protobuf.protocol.{ Directory, FileReference, File => SlaveFile }
 import com.google.protobuf.ByteString
 import monix.eval.Task
-import java.nio.file.{Files, Paths}
+import java.nio.file.{ Files, Paths }
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 object FileSystem {
 
   val `./root`: String = "./root"
   val `~` = "~"
-  val `/` : String = "/"
+  val `/`: String = "/"
 
   def createDir(directory: Directory): Task[Boolean] = {
     Task.eval {
@@ -23,10 +23,10 @@ object FileSystem {
   }
 
   def createDir(dirPath: String): Boolean = {
-    if(dirPath.startsWith(`./root`)) {
+    if (dirPath.startsWith(`./root`)) {
       val dir: File = new File(dirPath)
       val created = dir.mkdirs() //it returns false if the file already existed
-      if (created)  println(s"FileSystem - Created dir $dirPath ")
+      if (created) println(s"FileSystem - Created dir $dirPath ")
       else println(s"FileSystem - The dir $dirPath was already created")
       created
     } else {
@@ -85,9 +85,9 @@ object FileSystem {
     if (dir.getPath.contains(`./root`)) {
       if (dir.exists()) {
         var subFiles = dir.listFiles()
-        if(subFiles==null) subFiles = Array()
+        if (subFiles == null) subFiles = Array()
         println(s"FileSystem - The directory $path to be deleted is not empty, deleting subdirectories first...")
-        val subFilesDeleted = subFiles.foldLeft(true)((deleted: Boolean, subDir: File) => deleted  && deleteDirRecursively(subDir))
+        val subFilesDeleted = subFiles.foldLeft(true)((deleted: Boolean, subDir: File) => deleted && deleteDirRecursively(subDir))
         //subFiles.foreach(_ => deleteDirRecursively(_))
         val deleted = dir.delete() && subFilesDeleted
         println(s"FileSystem - Deleted $path, recursive deletetion response $deleted")
@@ -119,7 +119,7 @@ object FileSystem {
     Task.eval {
       val filePath = `./root` + slaveFile.path + / + slaveFile.fileId + "~" + slaveFile.fileName
       val file = new File(filePath)
-      if(file.isFile){
+      if (file.isFile) {
         delete(file)
       } else { //todo test
         println(s"FileSyetem - The given slave file was not actually a file, path $filePath ")

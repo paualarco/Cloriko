@@ -1,7 +1,7 @@
 package com.cloriko.master
 
 import com.cloriko.master.Master.{ OperationId }
-import com.cloriko.master.SlaveRef.{ DeleteTrace, OverviewTrace, UpdateTrace }
+import com.cloriko.master.SlaveRef.{ DeleteTrace, OverviewRequestTrace, UpdateTrace }
 import com.cloriko.master.grpc.GrpcServer.{ DeleteChannel, OverviewChannel, UpdateChannel }
 import com.cloriko.protobuf.protocol.{ Delete, Directory, FileReference, OverviewRequest, Update }
 
@@ -9,7 +9,7 @@ class SlaveRef(slaveId: String) {
   var snapshot: Directory = Directory("root", "root", "/", Seq[Directory](), Seq[FileReference]())
   var updateTrace = UpdateTrace()
   var deleteTrace = DeleteTrace()
-  var overviewTrace = OverviewTrace()
+  var overviewTrace = OverviewRequestTrace()
 
   def addPendingUpdate(update: Update): this.type = {
     println(s"SlaveRef - Added pending update $update to slave ${update.slaveId}")
@@ -31,6 +31,7 @@ object SlaveRef {
   def apply(slaveId: String): SlaveRef = new SlaveRef(slaveId)
   case class UpdateTrace(pendingUpdates: Map[OperationId, Update] = Map(), updateChannel: Option[UpdateChannel] = None)
   case class DeleteTrace(pendingDeletes: Map[OperationId, Delete] = Map(), deleteChannel: Option[DeleteChannel] = None)
-  case class OverviewTrace(pendingOverviewRequests: Map[OperationId, OverviewRequest] = Map(), overviewChannel: Option[OverviewChannel] = None)
-  case class OverallTrace(updateTrace: UpdateTrace, deleteTrace: DeleteTrace, overviewTrace: OverviewTrace)
+  case class OverviewRequestTrace(pendingOverviewRequests: Map[OperationId, OverviewRequest] = Map(), overviewChannel: Option[OverviewChannel] = None)
+  case class FileRequestTrace(pendingOverviewRequests: Map[OperationId, OverviewRequest] = Map(), overviewChannel: Option[OverviewChannel] = None)
+  case class OverallTrace(updateTrace: UpdateTrace, deleteTrace: DeleteTrace, overviewTrace: OverviewRequestTrace)
 }

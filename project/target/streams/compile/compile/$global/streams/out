@@ -1,4 +1,0 @@
-[error] /Users/pau.alarcon/Documents/open-source/Cloriko/project/Dependencies.scala:36:90: value moni is not a member of object Dependencies.DependencyVersions
-[error]      "io.monix"                 %% "monix"                          % DependencyVersions.moni,
-[error]                                                                                          ^
-[error] one error found
