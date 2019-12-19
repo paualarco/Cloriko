@@ -8,8 +8,6 @@ import org.http4s.implicits._
 import org.http4s.server.blaze._
 import monix.execution.Scheduler.Implicits.global
 
-import scala.concurrent.Future
-
 object SlaveApp extends IOApp {
 
   val slaveRoutes = HttpRoutes.of[IO] {
@@ -21,7 +19,7 @@ object SlaveApp extends IOApp {
             slave.joinRequestCloriko(password).runAsync.map {
               reply =>
                 if (reply.authenticated) {
-                  slave.initUpdateFlow(username, slave.slaveId)
+                  slave.initProtocol(username, slave.slaveId)
                   //todo check that all flows were correctly initialized
                   s"Slave joined successfully and grpc protocol initialized with $username's cloriko."
                 } else s"Slave - JoinRequest rejected from user $username"

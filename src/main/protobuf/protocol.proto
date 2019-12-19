@@ -2,14 +2,10 @@ syntax = "proto3";
 
 package com.cloriko.protobuf;
 
-// The greeting service definition.
+//Master slave service definition
 service MasterSlaveProtocol {
   rpc join (JoinRequest) returns (JoinReply) {}
-  rpc channel (JoinRequest) returns (JoinReply) {}
-  //rpc updateStream   (stream Updated)       returns (stream Update)          {}
-  //rpc deleteStream   (stream Deleted)       returns (stream Delete)          {}
-  //rpc overviewStream (stream Overview)      returns (stream OverviewRequest) {}
-  //rpc fetchStream    (stream FetchResponse) returns (stream FetchRequest)    {}
+  rpc protocol (stream SlaveResponse) returns (stream MasterRequest) {}
 }
 
 message MasterRequest {
@@ -17,7 +13,7 @@ message MasterRequest {
     JoinReply join_reply             = 1;
     Delete delete                    = 2;
     Update update                    = 3;
-    FetchRequest file_request         = 4;
+    FetchRequest fetch_request       = 4;
     OverviewRequest overview_request = 5;
     HeartBeat heartbeat              = 6;
   }
@@ -34,6 +30,7 @@ message SlaveResponse {
   }
 }
 
+//domain
 message File {
   string file_id   = 1;
   string file_name = 2;
@@ -55,6 +52,7 @@ message Directory {
   repeated FileReference files   = 5;
 }
 
+//protocol
 message JoinRequest {
   string id       = 1;
   string username = 2;
@@ -80,7 +78,7 @@ message Updated {
   string slave_id = 3;
 }
 
-message Delete{
+message Delete {
   string id                         = 1;
   string username                   = 2;
   string slave_id                   = 3;
@@ -94,35 +92,35 @@ message Deleted {
 }
 
 message FetchRequest {
-  string id   = 1;
-  string path = 2;
+  string id       = 1;
+  string username = 2;
+  string slave_id = 3;
+  string path     = 4;
 }
 
 message FetchResponse {
-  string id   = 1;
-  string path = 2;
-  File file   = 3;
-}
-
-message OverviewResponse {
-  string id                    = 1;
-  Directory actual_content     = 2;
-  Directory replicated_content = 3;
-  string space                 = 4;
+  string id       = 1;
+  string username = 2;
+  string slave_id = 3;
+  string path     = 4;
+  File file       = 5;
 }
 
 message OverviewRequest {
   string id       = 1;
   string username = 2;
+  string slave_id = 3;
+}
+
+message OverviewResponse {
+  string id           = 1;
+  string username     = 2;
+  string slave_id     = 3;
+  Directory directory = 4;
+  string space        = 5;
 }
 
 message HeartBeat {
   string username = 1;
   string slave_id = 2;
 }
-
-
-
-
-
-

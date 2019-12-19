@@ -1,8 +1,8 @@
 package com.cloriko.master
 
 import akka.util.Timeout
-import com.cloriko.master.grpc.GrpcServer.UpdateChannel
-import com.cloriko.protobuf.protocol.Update
+import com.cloriko.master.grpc.GrpcServer.GrpcChannel
+import com.cloriko.protobuf.protocol.{MasterRequest, SlaveResponse, Update}
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 
@@ -41,13 +41,13 @@ class Cloriko {
     }
   }
 
-  def registerUpdateChannel(slaveChannel: UpdateChannel): Task[Boolean] = {
+  def registerChannel(slaveChannel: GrpcChannel[SlaveResponse, MasterRequest]): Task[Boolean] = {
     Task.eval {
       println("Cloriko - Slave chanel subscription received")
       masters.get(slaveChannel.username) match {
         case Some(master) => {
           println(s"Cloriko - Sending $slaveChannel from ${slaveChannel.slaveId} at master of ${slaveChannel.username}")
-          master.registerUpdateChannel(slaveChannel).runAsync
+          master.registerChannel(slaveChannel).runAsync
           true
         }
         case None => println(s"Cloriko - Master not found for slaveChannel of ${slaveChannel.username} and ${slaveChannel.slaveId} "); false

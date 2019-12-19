@@ -1,13 +1,13 @@
 package com.cloriko.master
 
-import com.cloriko.master.grpc.GrpcServer.{ DeleteChannel, OverviewChannel, UpdateChannel }
+import com.cloriko.master.grpc.GrpcServer.GrpcChannel
 import com.cloriko.protobuf.protocol._
 import monix.eval.Task
-import monix.reactive.{ Consumer, Observable }
+import monix.reactive.Consumer
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.observers.Subscriber
 import Master.initialDir
-import com.google.protobuf.ByteString
+import com.cloriko.DecoderImplicits._
 
 class Master(username: String) {
 
@@ -28,19 +28,19 @@ class Master(username: String) {
     }
   }
 
-  def performUpdateOp(update: Update): Task[Boolean] = {
+  def sendAndPending(update: MasterRequest): Task[Boolean] = {
     Task.eval {
       slaves.get(update.slaveId) match {
         case Some(slave: SlaveRef) => {
-          slave.updateTrace.updateChannel match {
-            case Some(updateChannel) => {
+          slave.grpcChannel match {
+            case Some(channel) => {
               println(s"Master - Update operation sent to slave ${update.slaveId} of username: ${update.username}")
-              slave.addPendingUpdate(update)
-              updateChannel.updateUpStream.onNext(update)
+              slave.addPendingUpdate(update.asProto)
+              channel.upStream.onNext(update.asProto)
               true
             }
             case None => {
-              println(s"Master - Update op of user ${update.username} not delivered since there was no update channel defined")
+              println(s"Master -  p of user ${update.username} not delivered since there was no update channel defined")
               false
             }
           }
@@ -54,45 +54,31 @@ class Master(username: String) {
     }
   }
 
-  def registerUpdateChannel(updateChannel: UpdateChannel): Task[Boolean] = {
+  def registerChannel(slaveChannel: GrpcChannel[SlaveResponse, MasterRequest]): Task[Boolean] = {
     Task.eval {
-      println(s"Master - Received slave chanel at master from user: $username and slaveId: ${updateChannel.slaveId}!")
-      slaves.get(updateChannel.slaveId) match {
+      println(s"Master - Received slave chanel at master from user: $username and slaveId: ${slaveChannel.slaveId}!")
+      slaves.get(slaveChannel.slaveId) match {
         case Some(slave: SlaveRef) => {
-          println(s"Master - A new slave channel registered for slave ${updateChannel.slaveId}")
-          slave.updateTrace = slave.updateTrace.copy(updateChannel = Some(updateChannel))
-          consumeSlaveResponses(updateChannel.udatedDownStream, updateChannel.updateUpStream).runAsync
+          println(s"Master - A new slave channel registered for slave ${slaveChannel.slaveId}")
+          slave.grpcChannel = Some(slaveChannel)
+          println(s"Master - DEBUG - Strating to consume from ${slaveChannel.downStream} and producing using ${slaveChannel.upStream}")
+          slaveChannel.downStream.consumeWith(simplePendingOperationResponseConsumer)
           true
         }
-        case None => println(s"Slave ${updateChannel.slaveId} not found"); false
+        case None => println(s"Slave ${slaveChannel.slaveId} not found"); false
       }
     }
   }
 
-  val fileExample = File("fileId-1", "fileName1", "/root", ByteString.copyFromUtf8("heey"))
-  def operationResponse(updateUpStream: Subscriber.Sync[Update]): Consumer[Updated, Unit] = {
-
-    Consumer.foreach { _ => updateUpStream.onNext(Update("update1", "paualarco", "slaveId-1", Some(fileExample))) }
-    //Consumer.foreach { println }
-  }
-
-  def consumeSlaveResponses(updatedDownStream: Observable[Updated], updateUpStream: Subscriber.Sync[Update]) = {
-    println(s"Master - DEBUG - Strating to consume from $updatedDownStream and producing using $updateUpStream")
-    updatedDownStream.consumeWith(printConsumer(updateUpStream)) // operationResponse(masterRequests))
-  }
-
-  val printConsumer: Subscriber.Sync[Update] => Consumer[Updated, Unit] = {
-    updateUpstream =>
-      Consumer.foreach(updated => {
+  val simplePendingOperationResponseConsumer: Consumer.Sync[SlaveResponse, Unit] = {
+    Consumer.foreach {
+      updated => {
         println(s"Master - Consumed updated event $updated")
         slaves.get(updated.slaveId) match {
-          case Some(slave) => {
-            slave.removePendingUpdate(updated.id)
-            //slaves.get(updated.slaveId).get.updateTrace.updateChannel.get.updateUpStream.onNext(Update("update1", "paualarco", updated.slaveId, None))
-          }
+          case Some(slave) => slave.removePendingUpdate(updated.id)
         }
-        //updateUpstream.onNext(Update("update1", "paualarco", u.slaveId, None))
-      })
+      }
+    }
   }
 
 }

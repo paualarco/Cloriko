@@ -1,16 +1,18 @@
 package com.cloriko.slave
 
-import com.cloriko.protobuf.protocol.{ JoinReply, JoinRequest, ProtocolGrpcMonix, Update, Updated }
+import com.cloriko.protobuf.protocol.{JoinReply, JoinRequest, MasterRequest, ProtocolGrpcMonix, SlaveResponse, Update, Updated}
 import io.grpc.ManagedChannelBuilder
 import monix.eval.Task
 import monix.execution.Cancelable
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.observers.Subscriber
-import monix.reactive.{ Consumer, Observable, OverflowStrategy }
+import monix.reactive.{Consumer, Observable, OverflowStrategy}
+import com.cloriko.DecoderImplicits._
+import com.cloriko.master.grpc.GrpcServer.GrpcChannel
 
 class Slave(username: String) {
   val slaveId = "randomSlaveId"
-  var updateChannel: Option[SlaveUpdateChannel] = None
+  var grpcChannel: Option[GrpcChannel[MasterRequest, SlaveResponse]] = None
 
   val channel = ManagedChannelBuilder
     .forAddress("localhost", 8980)
@@ -24,52 +26,47 @@ class Slave(username: String) {
     stub.join(JoinRequest("id1", username, password, slaveId))
   }
 
-  val updateCousumer: Subscriber.Sync[Updated] => Consumer.Sync[Update, Unit] = { updateUpstream =>
-    println("Slave - Starting update consumer")
-    Consumer.foreach[Update] { update =>
-      println(s"Slave - Update received: $update, returning Updated event, updatedUpstream used: $updateUpstream")
-      updateUpstream.onNext(Updated(update.id, username, slaveId))
+  def handleUpdate(update: Update, slaveUpStream: Subscriber.Sync[SlaveResponse]): Task[Unit] = {
+    Task.eval {
+      update.file match {//todo delete optional File field
+        case Some(file) => {
+          FileSystem.createFile(file).runAsync.onSuccess {
+            case true => {
+              slaveUpStream.onNext(Updated(update.id, username, slaveId).asProto)
+              println(s"Slave - Update received: $update, returning Updated event, slaveResponseUpstream used: $slaveUpStream")
+            }
+            case false => println(s"There was a failure during the creation of file from update: ${update.id} at slave $slaveId")
+          }
+        }
+        case None => {
+          println(s"Slave - Update file ${update.id} was empty... dir to do for ${slaveId} ")
+          slaveUpStream.onNext(Updated(update.id, username, slaveId).asProto)
+        }
+      }
     }
   }
 
-  val updateCousumerFromObserver: (Observable[Update], Subscriber.Sync[Updated]) => Cancelable = {
-    (observable: Observable[Update], updateUpstream: Subscriber.Sync[Updated]) =>
-      println("Slave - Starting update consumer")
-      val consumer = Consumer.foreach[Update] { update =>
-        update.file match { //todo delete optional File field
-          case Some(file) => {
-            FileSystem.createFile(file).runAsync.onSuccess {
-              case true => {
-                updateUpstream.onNext(Updated(update.id, username, slaveId))
-                println(s"Slave - Update received: $update, returning Updated event, updatedUpstream used: $updateUpstream")
-
-              }
-              case false => println(s"There was a failure during the creation of file from update: ${update.id} at slave $slaveId")
-            }
-          }
-          case None => {
-            println(s"Slave - Update file ${update.id} was empty... dir to do for ${slaveId} ")
-            updateUpstream.onNext(Updated(update.id, username, slaveId))
-          }
+  val masterRequestsConsumer: (Subscriber.Sync[SlaveResponse] => Consumer.Sync[MasterRequest, Unit]) = {
+    upStream =>
+      Consumer.foreach[MasterRequest] { masterRequest =>
+        val sealedValue = masterRequest.sealedValue
+        sealedValue.update match {
+          case Some(update) => handleUpdate(update, upStream).runAsync
+          case _ => println(s"Slave - A master request operation not yet implemented was received. sealedValue $sealedValue")
         }
       }
-      observable.consumeWith(consumer).runAsync
   }
 
-  val printConsumer: Consumer[Update, Unit] = {
-    Consumer.foreach(u => println(s"Slave - Consumed updates $u"))
-  }
-
-  def initUpdateFlow(username: String, slaveId: String) = {
+  def initProtocol(username: String, slaveId: String) = {
     println(s"Slave - Initializing update flow from slave $slaveId to $username cluster")
     val emptyUpdated = Updated("0", username, slaveId)
     //val updateDownstream = stub.updateStream(Observable.fromIterable[Updated](List(updated)))
 
-    val ob = stub.channel {
-      val obs = Observable.create[Updated](OverflowStrategy.Unbounded) { updateUpstream: Subscriber.Sync[Updated] =>
-        println(s"Slave - UpdatedUpStream created: $updateUpstream and actioned")
-        updateChannel = Some(SlaveUpdateChannel(username, slaveId, Some(updateUpstream), None))
-        updateUpstream.onNext(emptyUpdated)
+    val ob = stub.protocol {
+      val obs = Observable.create[SlaveResponse](OverflowStrategy.Unbounded) { upStream: Subscriber.Sync[SlaveResponse] =>
+        println(s"Slave - UpdatedUpStream created: $upStream and actioned")
+        grpcChannel = Some(GrpcChannel[MasterRequest, SlaveResponse](username, slaveId, Observable.empty[MasterRequest], upStream))
+        upStream.onNext(emptyUpdated.asProto)
         Task.now(println("Slave - Running dummy task")).runAsync
       }
       //obs.runAsyncGetFirst
@@ -77,24 +74,21 @@ class Slave(username: String) {
       obs
     }
 
-    //ob.consumeWith(updateCousumer(updateChannel.get.updateUpstream.get)).runAsync
+    val consumerStarter: Task[MasterRequest] = ob.consumeWith(Consumer.head[MasterRequest])
 
-    val consumerStarter: Task[Update] = ob.consumeWith(Consumer.head[Update])
     println("Checkpoint print")
     consumerStarter.runAsync.onSuccess {
-      case _: Update => {
-        val currentUpdatedUpstream = updateChannel.get.updateUpstream.get
-        println(s"Slave - Starting to consume update events from updateUpstream ${updateChannel.get.updateUpstream.get}")
-        updateCousumerFromObserver(ob, currentUpdatedUpstream)
+      case _: MasterRequest => {
+        val currentUpdatedUpstream = grpcChannel.get.upStream
+        println(s"Slave - Starting to consume update events from updateUpstream ${grpcChannel.get.upStream}")
+        ob.consumeWith(masterRequestsConsumer(currentUpdatedUpstream)).runAsync
         //ob.consumeWith(updateCousumer(currentUpdatedUpstream)).runAsync
       }
       case _ => println("Slave - Update consumer not started... SOmething failed")
     }
-
     //    Await.result(obs.consumeWith(printConsumer).runAsync, 10 seconds)
-
   }
-  case class SlaveUpdateChannel(username: String, slaveId: String, updateUpstream: Option[Subscriber.Sync[Updated]], updateDownstream: Option[Observable[Update]])
+  //case class GrChannel(username: String, slaveId: String, updateUpstream: Option[Subscriber.Sync[SlaveResponse]], updateDownstream: Option[Observable[MasterRequest]])
 
 }
 
