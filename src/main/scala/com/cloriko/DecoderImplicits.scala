@@ -1,6 +1,7 @@
 package com.cloriko
 
-import com.cloriko.protobuf.protocol.{ MasterRequest, SlaveResponse }
+import com.cloriko.master.http.OperationalRoutes.DeleteEntity
+import com.cloriko.protobuf.protocol.{Delete, FileReference, MasterRequest, SlaveResponse}
 
 import scala.language.implicitConversions
 
@@ -77,4 +78,27 @@ object DecoderImplicits {
   implicit def updatedAsSlaveResponse(updated: com.cloriko.protobuf.protocol.Updated): ExtendedSlaveResponse =
     new ExtendedSlaveResponse(SlaveResponse(SlaveResponse.SealedValue.Updated(updated)))
 
+  implicit def deleteAsMasterRequest(delete: com.cloriko.protobuf.protocol.Delete): ExtendedMasterRequest =
+    new ExtendedMasterRequest(MasterRequest(MasterRequest.SealedValue.Delete(delete)))
+
+  implicit def deletedAsSlaveResponse(deleted: com.cloriko.protobuf.protocol.Deleted): ExtendedSlaveResponse =
+    new ExtendedSlaveResponse(SlaveResponse(SlaveResponse.SealedValue.Deleted(deleted)))
+
+  implicit def deleteEntityAsMasterRequest(deleteEntity: DeleteEntity): ExtendedMasterRequest = {
+    val delete: Delete = {
+      Delete(
+        deleteEntity.id,
+        deleteEntity.username,
+        deleteEntity.slaveId,
+        Seq(
+          FileReference(
+            deleteEntity.fileId,
+            deleteEntity.fileName,
+            deleteEntity.path
+          )
+        )
+      )
+    }
+    new ExtendedMasterRequest(MasterRequest(MasterRequest.SealedValue.Delete(delete)))
+  }
 }

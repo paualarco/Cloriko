@@ -2,9 +2,10 @@ package com.cloriko.master
 
 import akka.util.Timeout
 import com.cloriko.master.grpc.GrpcServer.GrpcChannel
-import com.cloriko.protobuf.protocol.{MasterRequest, SlaveResponse, Update}
+import com.cloriko.protobuf.protocol.{ MasterRequest, SlaveResponse }
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
+import com.cloriko.DecoderImplicits._
 
 import scala.concurrent.duration._
 
@@ -41,7 +42,7 @@ class Cloriko {
     }
   }
 
-  def registerChannel(slaveChannel: GrpcChannel[SlaveResponse, MasterRequest]): Task[Boolean] = {
+  def registerGrpcChannel(slaveChannel: GrpcChannel[SlaveResponse, MasterRequest]): Task[Boolean] = {
     Task.eval {
       println("Cloriko - Slave chanel subscription received")
       masters.get(slaveChannel.username) match {
@@ -55,14 +56,14 @@ class Cloriko {
     }
   }
 
-  def dispatchUpdateToMaster(updateOp: Update): Task[Boolean] = {
-    masters.get(updateOp.username) match {
+  def dispatchRequestToMaster(request: MasterRequest): Task[Boolean] = {
+    masters.get(request.username) match {
       case Some(master) => {
-        println(s"Cloriko -  Update operation being sent to master of username: ${updateOp.username}")
-        master.performUpdateOp(updateOp)
+        println(s"Cloriko - Request being sent to master of username: ${request.username}")
+        master.sendRequest(request)
       }
       case None => {
-        println(s"Cloriko - Update op of user ${updateOp.username} not delivered since master was not found")
+        println(s"Cloriko - Update op of user ${request.username} not delivered since master was not found")
         Task.now(false)
       }
     }

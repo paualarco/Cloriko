@@ -1,51 +1,38 @@
 package com.cloriko.master
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
-import akka.stream.ActorMaterializer
-import akka.util.Timeout
+import cats.implicits._
+import cats.effect.{ExitCode, IO, IOApp}
 import com.cloriko.master.grpc.GrpcServer
-import com.cloriko.master.http.{ OperationalRoutes, UserAuthRoutes }
-import akka.http.scaladsl.server.Directives.concat
+import org.http4s.implicits._
+import org.http4s.server.blaze._
+import com.cloriko.master.http.{OperationalRoutes, UserAuthRoutes}
+import org.http4s.server.Router
 
-import scala.concurrent.{ Await, ExecutionContext, Future }
-import scala.concurrent.duration.Duration
-import scala.util.{ Failure, Success }
-import scala.concurrent.duration._
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
-object WebServer {
-  def main(args: Array[String]): Unit = {
-    new WebServer
-  }
+object WebServer extends IOApp with OperationalRoutes with UserAuthRoutes {
 
-  class WebServer extends UserAuthRoutes with OperationalRoutes {
+  val cloriko: Cloriko = new Cloriko
 
-    implicit val system: ActorSystem = ActorSystem("Cloriko")
-    implicit val materializer: ActorMaterializer = ActorMaterializer()
-    implicit val executionContext: ExecutionContext = system.dispatcher
-    implicit val timeout: Timeout = Timeout(15 seconds)
-    val cloriko: Cloriko = new Cloriko
-    val routes = concat(userAuthRoutes, operationalRoutes)
+  val host = "0.0.0.0"
+  val port = 8080
 
-    val host = "0.0.0.0"
-    val port = 8080
+  val endPoint = s"http://localhost:$port"
 
-    val serverBinding: Future[Http.ServerBinding] = Http().bindAndHandle(routes, host, port)
+  Future(new GrpcServer(endPoint, cloriko).start().blockUntilShutdown())
 
-    val endPoint = s"http://localhost:$port"
-    Future(new GrpcServer(endPoint, cloriko).start().blockUntilShutdown())
+  val routes = userRoutes <+> operationalRoutes
 
-    serverBinding.onComplete {
-      case Success(bound) =>
-        println(s"Server online at http://${bound.localAddress.getHostString}:${bound.localAddress.getPort}/")
-      case Failure(e) =>
-        Console.err.println(s"Server could not start!")
-        e.printStackTrace()
-        system.terminate()
-    }
+  val httpApp = Router("/user" -> userRoutes, "/operations" -> operationalRoutes).orNotFound
 
-    Await.result(system.whenTerminated, Duration.Inf)
-  }
+  def run(args: List[String]): IO[ExitCode] =
+    BlazeServerBuilder[IO]
+      .bindHttp(port, "localhost")
+      .withHttpApp(routes.orNotFound)
+      .serve
+      .compile
+      .drain
+      .as(ExitCode.Success)
 
 }
-

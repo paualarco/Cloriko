@@ -16,7 +16,7 @@ class SlaveRefSpec extends WordSpecLike with Matchers with ScalaFutures with Gen
       val updateOp = genUpdate.sample.get
 
       //when
-      slaveRef.addPendingUpdate(updateOp)
+      slaveRef.addPendingRequest(updateOp)
 
       //then
       slaveRef.updateTrace.pendingUpdates shouldEqual Map(updateOp.id -> updateOp)
@@ -25,7 +25,7 @@ class SlaveRefSpec extends WordSpecLike with Matchers with ScalaFutures with Gen
     "remove existing updates from pendingUpdates" in {
       //given
       val updateOp = genUpdate.sample.get
-      slaveRef.addPendingUpdate(updateOp)
+      slaveRef.addPendingRequest(updateOp)
 
       //when
       slaveRef.removePendingUpdate(updateOp.id)

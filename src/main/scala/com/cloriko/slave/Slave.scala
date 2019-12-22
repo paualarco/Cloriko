@@ -1,12 +1,11 @@
 package com.cloriko.slave
 
-import com.cloriko.protobuf.protocol.{JoinReply, JoinRequest, MasterRequest, ProtocolGrpcMonix, SlaveResponse, Update, Updated}
+import com.cloriko.protobuf.protocol.{ Delete, JoinReply, JoinRequest, MasterRequest, ProtocolGrpcMonix, SlaveResponse, Update, Updated }
 import io.grpc.ManagedChannelBuilder
 import monix.eval.Task
-import monix.execution.Cancelable
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.observers.Subscriber
-import monix.reactive.{Consumer, Observable, OverflowStrategy}
+import monix.reactive.{ Consumer, Observable, OverflowStrategy }
 import com.cloriko.DecoderImplicits._
 import com.cloriko.master.grpc.GrpcServer.GrpcChannel
 
@@ -28,7 +27,7 @@ class Slave(username: String) {
 
   def handleUpdate(update: Update, slaveUpStream: Subscriber.Sync[SlaveResponse]): Task[Unit] = {
     Task.eval {
-      update.file match {//todo delete optional File field
+      update.file match { //todo delete optional File field
         case Some(file) => {
           FileSystem.createFile(file).runAsync.onSuccess {
             case true => {
@@ -46,13 +45,29 @@ class Slave(username: String) {
     }
   }
 
+  def handleDelete(delete: Delete, upStream: Subscriber.Sync[SlaveResponse]): Task[Unit] = {
+    Task.eval {
+      FileSystem.deleteFile(delete.references.head).runAsync.onSuccess {
+        case true => {
+          upStream.onNext(Updated(delete.id, username, slaveId).asProto)
+          println(s"Slave - Update received: $delete, returning Updated event, slaveResponseUpstream used: $upStream")
+        }
+        case false => println(s"There was a failure during the creation of file from update: ${delete.id} at slave $slaveId")
+
+      }
+    }
+  }
+
   val masterRequestsConsumer: (Subscriber.Sync[SlaveResponse] => Consumer.Sync[MasterRequest, Unit]) = {
     upStream =>
       Consumer.foreach[MasterRequest] { masterRequest =>
         val sealedValue = masterRequest.sealedValue
         sealedValue.update match {
           case Some(update) => handleUpdate(update, upStream).runAsync
-          case _ => println(s"Slave - A master request operation not yet implemented was received. sealedValue $sealedValue")
+          case _ => sealedValue.delete match {
+            case Some(deleteReq) => handleDelete(deleteReq, upStream).runAsync
+            case _ => println(s"Slave - A master request operation not yet implemented was received. sealedValue $sealedValue")
+          }
         }
       }
   }
@@ -63,11 +78,12 @@ class Slave(username: String) {
     //val updateDownstream = stub.updateStream(Observable.fromIterable[Updated](List(updated)))
 
     val ob = stub.protocol {
-      val obs = Observable.create[SlaveResponse](OverflowStrategy.Unbounded) { upStream: Subscriber.Sync[SlaveResponse] =>
-        println(s"Slave - UpdatedUpStream created: $upStream and actioned")
-        grpcChannel = Some(GrpcChannel[MasterRequest, SlaveResponse](username, slaveId, Observable.empty[MasterRequest], upStream))
-        upStream.onNext(emptyUpdated.asProto)
-        Task.now(println("Slave - Running dummy task")).runAsync
+      val obs = Observable.create[SlaveResponse](OverflowStrategy.Unbounded) {
+        upStream: Subscriber.Sync[SlaveResponse] =>
+          println(s"Slave - UpdatedUpStream created: $upStream and actioned")
+          grpcChannel = Some(GrpcChannel[MasterRequest, SlaveResponse](username, slaveId, Observable.empty[MasterRequest], upStream))
+          upStream.onNext(emptyUpdated.asProto)
+          Task.now(println("Slave - Running dummy task")).runAsync
       }
       //obs.runAsyncGetFirst
       println(s"Slave - Update stream protocol called, observable created: $obs")

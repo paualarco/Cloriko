@@ -4,8 +4,6 @@ import com.cloriko.master.grpc.GrpcServer.GrpcChannel
 import com.cloriko.protobuf.protocol._
 import monix.eval.Task
 import monix.reactive.Consumer
-import monix.execution.Scheduler.Implicits.global
-import monix.reactive.observers.Subscriber
 import Master.initialDir
 import com.cloriko.DecoderImplicits._
 
@@ -28,26 +26,26 @@ class Master(username: String) {
     }
   }
 
-  def sendAndPending(update: MasterRequest): Task[Boolean] = {
+  def sendRequest(request: MasterRequest): Task[Boolean] = {
     Task.eval {
-      slaves.get(update.slaveId) match {
+      slaves.get(request.slaveId) match {
         case Some(slave: SlaveRef) => {
           slave.grpcChannel match {
             case Some(channel) => {
-              println(s"Master - Update operation sent to slave ${update.slaveId} of username: ${update.username}")
-              slave.addPendingUpdate(update.asProto)
-              channel.upStream.onNext(update.asProto)
+              println(s"Master - Update operation sent to slave ${request.slaveId} of username: ${request.username}")
+              slave.addPendingRequest(request.asProto)
+              channel.upStream.onNext(request.asProto)
               true
             }
             case None => {
-              println(s"Master -  p of user ${update.username} not delivered since there was no update channel defined")
+              println(s"Master -  p of user ${request.username} not delivered since there was no update channel defined")
               false
             }
           }
 
         }
         case None => {
-          println(s"Master - Update op of user ${update.username} not delivered since slaveId ${update.slaveId} was not found")
+          println(s"Master - Update op of user ${request.username} not delivered since slaveId ${request.slaveId} was not found")
           false
         }
       }
@@ -62,7 +60,7 @@ class Master(username: String) {
           println(s"Master - A new slave channel registered for slave ${slaveChannel.slaveId}")
           slave.grpcChannel = Some(slaveChannel)
           println(s"Master - DEBUG - Strating to consume from ${slaveChannel.downStream} and producing using ${slaveChannel.upStream}")
-          slaveChannel.downStream.consumeWith(simplePendingOperationResponseConsumer)
+          slaveChannel.downStream.consumeWith(simplePendingResponseConsumer)
           true
         }
         case None => println(s"Slave ${slaveChannel.slaveId} not found"); false
@@ -70,14 +68,15 @@ class Master(username: String) {
     }
   }
 
-  val simplePendingOperationResponseConsumer: Consumer.Sync[SlaveResponse, Unit] = {
+  val simplePendingResponseConsumer: Consumer.Sync[SlaveResponse, Unit] = {
     Consumer.foreach {
-      updated => {
-        println(s"Master - Consumed updated event $updated")
-        slaves.get(updated.slaveId) match {
-          case Some(slave) => slave.removePendingUpdate(updated.id)
+      updated =>
+        {
+          println(s"Master - Consumed updated event $updated")
+          slaves.get(updated.slaveId) match {
+            case Some(slave) => slave.removePendingResponse(updated.id)
+          }
         }
-      }
     }
   }
 

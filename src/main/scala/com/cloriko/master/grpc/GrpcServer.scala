@@ -1,12 +1,12 @@
 package com.cloriko.master.grpc
 
 import com.cloriko.DecoderImplicits._
-import com.cloriko.protobuf.protocol.{JoinReply, JoinRequest, _}
+import com.cloriko.protobuf.protocol.{ JoinReply, JoinRequest, _ }
 import com.cloriko.master.Cloriko
 import akka.actor.ActorSystem
-import io.grpc.{Server, ServerBuilder}
+import io.grpc.{ Server, ServerBuilder }
 import monix.eval.Task
-import monix.reactive.{Observable, OverflowStrategy}
+import monix.reactive.{ Observable, OverflowStrategy }
 import akka.util.Timeout
 import com.cloriko.master.grpc.GrpcServer.GrpcChannel
 import monix.reactive.observers.Subscriber
@@ -14,7 +14,7 @@ import monix.execution.Scheduler.Implicits.global
 
 import scala.concurrent.duration._
 
-class GrpcServer(localEndPoint: String, cloriko: Cloriko)(implicit actorSystem: ActorSystem) {
+class GrpcServer(localEndPoint: String, cloriko: Cloriko) {
 
   implicit lazy val timeout = Timeout(5.seconds)
   private[this] var server: Server = null
@@ -42,7 +42,7 @@ class GrpcServer(localEndPoint: String, cloriko: Cloriko)(implicit actorSystem: 
     this
   }
 
-  private class MasterSlaveProtocolImpl(localEndPoint: String)(implicit actorSystem: ActorSystem) extends ProtocolGrpcMonix.MasterSlaveProtocol {
+  private class MasterSlaveProtocolImpl(localEndPoint: String) extends ProtocolGrpcMonix.MasterSlaveProtocol {
     override def join(joinRequest: JoinRequest): Task[JoinReply] = {
       //eval
       val JoinRequest(id, username, password, slaveId) = joinRequest
@@ -65,7 +65,7 @@ class GrpcServer(localEndPoint: String, cloriko: Cloriko)(implicit actorSystem: 
         updatedDownstream.runAsyncGetFirst.map { //Updated used for starting, this is also causing to trigger two observables
           case Some(slaveResponse: SlaveResponse) => {
             println(s"Grpc - The first Update event of the flow was caught, username:${slaveResponse.username}, slaveId:${slaveResponse.slaveId}")
-            cloriko.registerChannel(GrpcChannel[SlaveResponse, MasterRequest](slaveResponse.username, slaveResponse.slaveId, updatedDownstream, updateUpStream)).runAsync
+            cloriko.registerGrpcChannel(GrpcChannel[SlaveResponse, MasterRequest](slaveResponse.username, slaveResponse.slaveId, updatedDownstream, updateUpStream)).runAsync
           }
           case None => println(s"Grpc - failed when getting first Updated event of the flow")
         }
@@ -76,6 +76,6 @@ class GrpcServer(localEndPoint: String, cloriko: Cloriko)(implicit actorSystem: 
 }
 
 object GrpcServer {
-  case class GrpcChannel[D, U](username: String, slaveId: String, downStream: Observable[D],  upStream: Subscriber.Sync[U])
+  case class GrpcChannel[D, U](username: String, slaveId: String, downStream: Observable[D], upStream: Subscriber.Sync[U])
 }
 

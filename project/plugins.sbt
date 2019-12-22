@@ -4,7 +4,7 @@ addSbtPlugin("com.thesamet" % "sbt-protoc" % "0.99.27")
 //libraryDependencies += "com.thesamet.scalapb" %% "compilerplugin" % "0.9.0"
 //addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.patch)
 addCompilerPlugin(
-  "org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full
+  "org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full //json http4s
 )
 
 resolvers += Resolver.bintrayRepo("beyondthelines", "maven")
