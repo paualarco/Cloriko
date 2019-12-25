@@ -15,14 +15,14 @@ package object cloriko {
 
   implicit def fileUtils(file: File): FileUtils = FileUtils(file)
   case class FileUtils(file: File) {
-    val absolutePath: String = `./root/data` + file.path + `/` + file.fileId + "~" + file.fileName
+    val absolutePath: String = `./root/data` + file.path + `/` + file.fileName
   }
 
   implicit def fileReferenceUtils(fileRef: FileReference): FileReferenceUtils = FileReferenceUtils(fileRef)
   case class FileReferenceUtils(fileRef: FileReference) {
-    val absolutePath: String = `./root/data` + fileRef.path + `/` + fileRef.fileId + "~" + fileRef.fileName
+    val absolutePath: String = `./root/data` + fileRef.path + `/` + fileRef.fileName
     def asSlaveFile(data: ByteString): File = {
-      File(fileRef.fileId, fileRef.fileName, fileRef.path, data)
+      File(fileRef.fileName, fileRef.path, data)
     }
   }
 

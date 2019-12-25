@@ -1,16 +1,15 @@
 package com.cloriko.master
 
-import akka.util.Timeout
 import com.cloriko.master.grpc.GrpcServer.GrpcChannel
-import com.cloriko.protobuf.protocol.{ MasterRequest, SlaveResponse }
+import com.cloriko.protobuf.protocol.{ FetchRequest, MasterRequest, SlaveResponse }
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import com.cloriko.DecoderImplicits._
+import com.cloriko.Generators
 
 import scala.concurrent.duration._
 
-class Cloriko {
-  implicit lazy val timeout = Timeout(2 seconds)
+class Cloriko extends Generators {
   var masters: Map[String, Master] = Map() //username -> Master ActorRef
 
   def joinRequest(id: String, username: String, password: String, slaveId: String): Task[Boolean] = {
@@ -65,6 +64,19 @@ class Cloriko {
       case None => {
         println(s"Cloriko - Update op of user ${request.username} not delivered since master was not found")
         Task.now(false)
+      }
+    }
+  }
+
+  def dispatchFetchRequest(request: FetchRequest): Task[SlaveResponse] = {
+    masters.get(request.username) match {
+      case Some(master) => {
+        println(s"Cloriko - Request being sent to master of username: ${request.username}")
+        master.sendFetchRequest(request)
+      }
+      case None => {
+        println(s"Cloriko - Fetch request from user ${request.username} not delivered since master was not found")
+        Task.eval(genFetchResponse().asProto)
       }
     }
   }

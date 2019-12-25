@@ -32,16 +32,14 @@ message SlaveResponse {
 
 //domain
 message File {
-  string file_id   = 1;
-  string file_name = 2;
-  string path      = 3;
-  bytes data       = 4;
+  string file_name = 1;
+  string path      = 2;
+  bytes data       = 3;
 }
 
 message FileReference {
-  string file_id   = 1;
-  string file_name = 2;
-  string path      = 3;
+  string file_name = 1;
+  string path      = 2;
 }
 
 message Directory {
@@ -92,18 +90,20 @@ message Deleted {
 }
 
 message FetchRequest {
-  string id       = 1;
-  string username = 2;
-  string slave_id = 3;
-  string path     = 4;
+  string id        = 1;
+  string username  = 2;
+  string slave_id  = 3;
+  string file_name = 4;
+  string path      = 5;
 }
 
 message FetchResponse {
-  string id       = 1;
-  string username = 2;
-  string slave_id = 3;
-  string path     = 4;
-  File file       = 5;
+  string id        = 1;
+  string username  = 2;
+  string slave_id  = 3;
+  string file_name = 4;
+  string path      = 5;
+  File file        = 6;
 }
 
 message OverviewRequest {

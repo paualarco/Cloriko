@@ -1,6 +1,6 @@
 package com.cloriko.slave
 
-import com.cloriko.protobuf.protocol.{ Delete, JoinReply, JoinRequest, MasterRequest, ProtocolGrpcMonix, SlaveResponse, Update, Updated }
+import com.cloriko.protobuf.protocol.{ Delete, FetchRequest, FetchResponse, File, FileReference, JoinReply, JoinRequest, MasterRequest, ProtocolGrpcMonix, SlaveResponse, Update, Updated }
 import io.grpc.ManagedChannelBuilder
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
@@ -58,6 +58,17 @@ class Slave(username: String) {
     }
   }
 
+  def handleFetch(fetchRequest: FetchRequest, upStream: Subscriber.Sync[SlaveResponse]): Task[Unit] = {
+    Task.eval {
+      FileSystem.scanFile(FileReference(fetchRequest.fileName, fetchRequest.path)).runAsync.onSuccess {
+        case file: File =>
+          val fetchResponse = FetchResponse(fetchRequest.id, username, fetchRequest.slaveId, fetchRequest.fileName, fetchRequest.path, Some(file))
+          upStream.onNext(fetchResponse.asProto)
+          println(s"Slave - Fetch response sent: $fetchResponse to upStream channel: $upStream")
+      }
+    }
+  }
+
   val masterRequestsConsumer: (Subscriber.Sync[SlaveResponse] => Consumer.Sync[MasterRequest, Unit]) = {
     upStream =>
       Consumer.foreach[MasterRequest] { masterRequest =>
@@ -66,7 +77,14 @@ class Slave(username: String) {
           case Some(update) => handleUpdate(update, upStream).runAsync
           case _ => sealedValue.delete match {
             case Some(deleteReq) => handleDelete(deleteReq, upStream).runAsync
-            case _ => println(s"Slave - A master request operation not yet implemented was received. sealedValue $sealedValue")
+            case _ => sealedValue.fetchRequest match {
+              case Some(fetchRequest) => {
+                handleFetch(fetchRequest, upStream).runAsync
+              }
+              case _ => println(s"Slave - A master request operation not yet implemented was received. sealedValue $sealedValue")
+
+            }
+
           }
         }
       }
@@ -95,10 +113,10 @@ class Slave(username: String) {
     println("Checkpoint print")
     consumerStarter.runAsync.onSuccess {
       case _: MasterRequest => {
-        val currentUpdatedUpstream = grpcChannel.get.upStream
+        val currentUpStream = grpcChannel.get.upStream
         println(s"Slave - Starting to consume update events from updateUpstream ${grpcChannel.get.upStream}")
-        ob.consumeWith(masterRequestsConsumer(currentUpdatedUpstream)).runAsync
-        //ob.consumeWith(updateCousumer(currentUpdatedUpstream)).runAsync
+        ob.consumeWith(masterRequestsConsumer(currentUpStream)).runAsync
+        //ob.consumeWith(updateCousumer(currentUpstream)).runAsync
       }
       case _ => println("Slave - Update consumer not started... SOmething failed")
     }

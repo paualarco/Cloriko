@@ -3,11 +3,9 @@ package com.cloriko.master.grpc
 import com.cloriko.DecoderImplicits._
 import com.cloriko.protobuf.protocol.{ JoinReply, JoinRequest, _ }
 import com.cloriko.master.Cloriko
-import akka.actor.ActorSystem
 import io.grpc.{ Server, ServerBuilder }
 import monix.eval.Task
 import monix.reactive.{ Observable, OverflowStrategy }
-import akka.util.Timeout
 import com.cloriko.master.grpc.GrpcServer.GrpcChannel
 import monix.reactive.observers.Subscriber
 import monix.execution.Scheduler.Implicits.global
@@ -16,7 +14,6 @@ import scala.concurrent.duration._
 
 class GrpcServer(localEndPoint: String, cloriko: Cloriko) {
 
-  implicit lazy val timeout = Timeout(5.seconds)
   private[this] var server: Server = null
 
   def start(): this.type = {
@@ -60,12 +57,12 @@ class GrpcServer(localEndPoint: String, cloriko: Cloriko) {
 
     override def protocol(input: Observable[SlaveResponse]): Observable[MasterRequest] = {
       println("Grpc - UpdateStream protocol received!")
-      val updatedDownstream = input
-      Observable.create(OverflowStrategy.Unbounded) { updateUpStream: Subscriber.Sync[MasterRequest] =>
-        updatedDownstream.runAsyncGetFirst.map { //Updated used for starting, this is also causing to trigger two observables
+      val downStream = input
+      Observable.create(OverflowStrategy.Unbounded) { upStream: Subscriber.Sync[MasterRequest] =>
+        downStream.runAsyncGetFirst.map { //Updated used for starting, this is also causing to trigger two observables
           case Some(slaveResponse: SlaveResponse) => {
             println(s"Grpc - The first Update event of the flow was caught, username:${slaveResponse.username}, slaveId:${slaveResponse.slaveId}")
-            cloriko.registerGrpcChannel(GrpcChannel[SlaveResponse, MasterRequest](slaveResponse.username, slaveResponse.slaveId, updatedDownstream, updateUpStream)).runAsync
+            cloriko.registerGrpcChannel(GrpcChannel[SlaveResponse, MasterRequest](slaveResponse.username, slaveResponse.slaveId, downStream, upStream)).runAsync
           }
           case None => println(s"Grpc - failed when getting first Updated event of the flow")
         }

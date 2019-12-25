@@ -1,6 +1,8 @@
 package com.cloriko
 
 import com.cloriko.protobuf.protocol.{ File, Update }
+import com.cloriko.protobuf.protocol.FetchResponse
+
 import com.google.protobuf.ByteString
 import org.scalacheck.Gen
 
@@ -21,5 +23,7 @@ trait Generators {
   val genByteString: Int => ByteString = n => ByteString.copyFromUtf8(genString(n))
   val genUpdate: Gen[Update] = Update(genRand1000, genUsername(), genSlaveId(), None)
   val generatePath: () => String = () => (1 to genRange(5)).foldLeft("") { case (path, _) => path + "/" + genString(7) }
-  val genSlaveFile: () => File = () => File(genFileId(), genFileName(), generatePath(), genByteString(50))
+  val genSlaveFile: () => File = () => File(genFileName(), generatePath(), genByteString(50))
+  val genFetchResponse: () => FetchResponse = () => FetchResponse(genString(10), genUsername(), genSlaveId(), genFileName(), generatePath(), Some(genSlaveFile()))
+
 }

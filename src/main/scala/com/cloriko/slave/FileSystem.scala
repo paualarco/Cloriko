@@ -38,7 +38,7 @@ object FileSystem {
   def createFile(slaveFile: SlaveFile): Task[Boolean] = {
     Task.eval {
       val dirPath = `./root/data` + slaveFile.path
-      val filePath = dirPath + `/` + slaveFile.fileId + "~" + slaveFile.fileName
+      val filePath = dirPath + `/` + slaveFile.fileName
       val file: File = new File(filePath)
       if (!file.exists()) {
         createDir(dirPath)
@@ -118,7 +118,7 @@ object FileSystem {
   def deleteFile(fileRef: FileReference): Task[Boolean] = {
     Task.eval {
       if (fileRef.path.startsWith("/")) {
-        val filePath = `./root/data` + fileRef.path + / + fileRef.fileId + "~" + fileRef.fileName
+        val filePath = `./root/data` + fileRef.path + / + fileRef.fileName
         val file = new File(filePath)
         if (file.isFile) {
           delete(file)
@@ -135,7 +135,7 @@ object FileSystem {
 
   def deleteFile(slaveFile: SlaveFile): Task[Boolean] = {
     Task.eval {
-      val filePath = `./root/data` + slaveFile.path + / + slaveFile.fileId + "~" + slaveFile.fileName
+      val filePath = `./root/data` + slaveFile.path + / + slaveFile.fileName
       val file = new File(filePath)
       if (file.isFile) {
         delete(file)
@@ -146,10 +146,12 @@ object FileSystem {
     }
   }
 
-  def scanFile(fileRef: FileReference): SlaveFile = {
-    println("FileSystem - Scanning file")
-    val bytes: Array[Byte] = Files.readAllBytes(Paths.get(fileRef.absolutePath))
-    fileRef.asSlaveFile(ByteString.copyFrom(bytes))
+  def scanFile(fileRef: FileReference): Task[SlaveFile] = {
+    Task.eval {
+      println("FileSystem - Scanning file")
+      val bytes: Array[Byte] = Files.readAllBytes(Paths.get(fileRef.absolutePath))
+      fileRef.asSlaveFile(ByteString.copyFrom(bytes))
+    }
   }
 
   val emptyFile: ByteString = ByteString.EMPTY

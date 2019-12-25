@@ -3,11 +3,16 @@ package com.cloriko.master
 import com.cloriko.master.grpc.GrpcServer.GrpcChannel
 import com.cloriko.protobuf.protocol._
 import monix.eval.Task
-import monix.reactive.Consumer
+import monix.reactive.{Consumer, Observable, OverflowStrategy}
 import Master.initialDir
 import com.cloriko.DecoderImplicits._
+import com.cloriko.Generators
+import monix.execution.CancelableFuture
+import monix.reactive
+import monix.reactive.observers.Subscriber
+import monix.execution.Scheduler.Implicits.global
 
-class Master(username: String) {
+class Master(username: String) extends Generators {
 
   val masterSnapshot: Directory = initialDir
   var slaves = Map[String, SlaveRef]().empty //Map of (SlaveId -> (OperationId -> Operation))
@@ -22,6 +27,49 @@ class Master(username: String) {
       } else {
         println(s"Master - The slave $slaveId was already part of the slave quorum")
         false
+      }
+    }
+  }
+
+  def awaitFetchResponse(id: String, slaveResponses: reactive.Observable[SlaveResponse]): Task[SlaveResponse] = {
+    println(s"Master - Awaiting fetch response with id $id")
+    val fetchResponseObservable = Observable.create(OverflowStrategy.Unbounded) {
+      fetchResponseSubscriber: Subscriber.Sync[SlaveResponse] =>
+        println(s"Master - Creating consumer for fetch request with id $id")
+        val consumerIdFilter = Consumer.foreach[SlaveResponse] {
+          slaveResponse =>
+            println(s"Master - Slave response received $slaveResponse")
+            if (slaveResponse.id == id) {
+              println(s"Master - Fetch response caught at master with id: $id")
+              fetchResponseSubscriber.onNext(slaveResponse)
+            }
+        }
+        println(s"Master - Starting to consume / filter from observable $slaveResponses $id")
+        slaveResponses.consumeWith(consumerIdFilter).runAsync
+    }
+    fetchResponseObservable.firstL
+  }
+
+  def sendFetchRequest(fetchRequest: FetchRequest): Task[SlaveResponse] = {
+    slaves.get(fetchRequest.slaveId) match {
+      case Some(slave: SlaveRef) => {
+        slave.grpcChannel match {
+          case Some(channel) => {
+            println(s"Master - Fetch response operation sent to slave ${fetchRequest.slaveId} of username: ${fetchRequest.username}")
+            slave.addPendingRequest(fetchRequest.asProto)
+            val fetchResponse = awaitFetchResponse(fetchRequest.id, channel.downStream)
+            channel.upStream.onNext(fetchRequest.asProto)
+            fetchResponse
+          }
+          case None => {
+            println(s"Master -  p of user ${fetchRequest.username} not delivered since there was no update channel defined")
+            Task.eval(genFetchResponse().asProto)
+          }
+          case None => {
+            println(s"Master - Update op of user ${fetchRequest.username} not delivered since slaveId ${fetchRequest.slaveId} was not found")
+            Task.eval(genFetchResponse().asProto)
+          }
+        }
       }
     }
   }
@@ -75,6 +123,7 @@ class Master(username: String) {
           println(s"Master - Consumed updated event $updated")
           slaves.get(updated.slaveId) match {
             case Some(slave) => slave.removePendingResponse(updated.id)
+
           }
         }
     }

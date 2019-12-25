@@ -9,7 +9,7 @@ PB.protocVersion := "-v3.10.0"
 lazy val root = (project in file(".")).
   settings(
     inThisBuild(List(
-      organization    := "com.example",
+      organization    := "com.cloriko",
       scalaVersion    := "2.12.4",
       version         := Version.version
     )),
