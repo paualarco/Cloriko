@@ -7,6 +7,7 @@ object Dependencies {
     val Monix = "2.3.3"
     val Circe = "0.11.1"
     val Http4s = "0.20.10"
+    val AkkaHttp =
     val TypesafeConfig = "1.3.2"
 
     val Log4jScala = "11.0"
@@ -34,6 +35,9 @@ object Dependencies {
     "io.circe"                  %% "circe-core"                     % DependencyVersions.Circe,
     "io.circe"                  %% "circe-generic"                  % DependencyVersions.Circe,
     "io.circe"                  %% "circe-parser"                   % DependencyVersions.Circe,
+    "com.typesafe.akka" %% "akka-http"   % "10.1.11",
+    "com.typesafe.akka"         %% "akka-http-spray-json"           % DependencyVersions.AkkaHttp,
+
     "org.http4s"                %% "http4s-server"                  % DependencyVersions.Http4s,
     "org.http4s"                %% "http4s-core"                    % DependencyVersions.Http4s,
     "org.http4s"                %% "http4s-dsl"                     % DependencyVersions.Http4s,
@@ -46,6 +50,8 @@ object Dependencies {
     "org.scalatest"             %% "scalatest"                      % DependencyVersions.Scalatest,
     "org.scalacheck"            %% "scalacheck"                     % DependencyVersions.Scalacheck,
     "org.mockito"               %  "mockito-core"                   % DependencyVersions.Mockito,
+    "com.typesafe.akka" %% "akka-http"   % "10.1.11",
+    "com.typesafe.akka" %% "akka-stream" % "2.5.26"
   ).map( _ % Test)
 
   val ProjectDependencies: Seq[ModuleID] = MainDependencies ++ TestDependencies

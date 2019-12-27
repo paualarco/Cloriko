@@ -10,7 +10,14 @@ import com.cloriko.master.http.{ OperationalRoutes, UserAuthRoutes }
 import org.http4s.server.Router
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import cats.implicits._
+import org.http4s.HttpRoutes
+import cats.effect.{ ExitCode, IO, IOApp }
+import org.http4s.dsl.io._
+import org.http4s.implicits._
+import org.http4s.server.blaze._
+import monix.execution.Scheduler.Implicits.global
+
 
 object WebServer extends IOApp with OperationalRoutes with UserAuthRoutes {
 
@@ -26,14 +33,12 @@ object WebServer extends IOApp with OperationalRoutes with UserAuthRoutes {
 
   Future(new GrpcServer(endPoint, cloriko).start().blockUntilShutdown())
 
-  val routes = userRoutes <+> operationalRoutes
-
-  val httpApp = Router("/user" -> userRoutes, "/operations" -> operationalRoutes).orNotFound
+  //val routes = userRoutes <+> operationalRoutes
 
   def run(args: List[String]): IO[ExitCode] =
     BlazeServerBuilder[IO]
       .bindHttp(port, host)
-      .withHttpApp(routes.orNotFound)
+      .withHttpApp(operationalRoutes.orNotFound)
       .serve
       .compile
       .drain

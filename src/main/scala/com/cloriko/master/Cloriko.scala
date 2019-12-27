@@ -1,11 +1,12 @@
 package com.cloriko.master
 
 import com.cloriko.master.grpc.GrpcServer.GrpcChannel
-import com.cloriko.protobuf.protocol.{ FetchRequest, MasterRequest, SlaveResponse }
+import com.cloriko.protobuf.protocol.{FetchRequest, MasterRequest, SlaveResponse}
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import com.cloriko.DecoderImplicits._
 import com.cloriko.Generators
+import monix.execution.CancelableFuture
 
 import scala.concurrent.duration._
 
@@ -55,7 +56,7 @@ class Cloriko extends Generators {
     }
   }
 
-  def dispatchRequestToMaster(request: MasterRequest): Task[Boolean] = {
+  def dispatchRequestToMaster(request: MasterRequest): Option[CancelableFuture[SlaveResponse]] = {
     masters.get(request.username) match {
       case Some(master) => {
         println(s"Cloriko - Request being sent to master of username: ${request.username}")
@@ -63,21 +64,9 @@ class Cloriko extends Generators {
       }
       case None => {
         println(s"Cloriko - Update op of user ${request.username} not delivered since master was not found")
-        Task.now(false)
+        None
       }
     }
   }
 
-  def dispatchFetchRequest(request: FetchRequest): Task[SlaveResponse] = {
-    masters.get(request.username) match {
-      case Some(master) => {
-        println(s"Cloriko - Request being sent to master of username: ${request.username}")
-        master.sendFetchRequest(request)
-      }
-      case None => {
-        println(s"Cloriko - Fetch request from user ${request.username} not delivered since master was not found")
-        Task.eval(genFetchResponse().asProto)
-      }
-    }
-  }
 }

@@ -17,7 +17,7 @@ object DecoderImplicits {
           case Some(delete) => OperationDescriptior(delete.id, delete.username, delete.slaveId)
           case _ =>
             sealedValue.fetchRequest match {
-              case Some(fileRequest) => OperationDescriptior(fileRequest.id, "fakeUsername", "fakeSlaveId")
+              case Some(fileRequest) => OperationDescriptior(fileRequest.id, fileRequest.username, fileRequest.slaveId)
               case _ =>
                 sealedValue.overviewRequest match {
                   case Some(overviewRequest) => OperationDescriptior(overviewRequest.id, overviewRequest.username, "fakeSlaveId")

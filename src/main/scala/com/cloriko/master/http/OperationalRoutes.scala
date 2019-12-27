@@ -20,11 +20,16 @@ import org.http4s.circe._
 import org.http4s.dsl.io._
 import org.http4s.multipart.Multipart
 import cats.implicits._
+import com.cloriko.Generators
 import monix.execution.Scheduler.Implicits.global
 import monix.eval.Task
 import monix.execution.CancelableFuture
 
-trait OperationalRoutes {
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
+
+
+trait OperationalRoutes extends Generators {
 
   val cloriko: Cloriko
   implicit val deleteDecoder = jsonOf[IO, Delete]
@@ -43,10 +48,12 @@ trait OperationalRoutes {
             val formattedPath = encodedPath.replace("|", "/")
             val update = Update("randomId", username, slaveId.toString, File(fileName, formattedPath, byteString).some)
             println(s"Multipart update received ${update}")
-            val resp = cloriko.dispatchRequestToMaster(update.asProto).runAsync.map {
-              case true => s"The Update operation was performed on ${update.slaveId}."
-              case false => s"The update request was not delivered"
-            }
+            val resp = cloriko.dispatchRequestToMaster(update.asProto).get //rElse(Task.now(s"The update request was not delivered"))
+              .map {
+                case _: SlaveResponse => s"The Update operation was performed on ${update.slaveId}."
+              }.recoverWith {
+                case e => Task.eval(s"The fetch request failed with error: $e").runAsync
+              }
             Ok(IO.fromFuture(IO(resp)))
           }
           case None => BadRequest("The update multipart does not contain file")
@@ -56,28 +63,41 @@ trait OperationalRoutes {
 
     case req @ POST -> Root / "delete" => {
       val delete: Delete = req.as[Delete].unsafeRunSync()
-      println(s"Delete entity received: $delete")
-      val randomId = Random.nextInt(100)
       println(s"WebServer - Delete operation received from user ${delete.username}")
-      val resp = cloriko.dispatchRequestToMaster(delete.asProto).runAsync.map {
-        case true => s"The delete operation was performed on ${delete.slaveId}."
-        case false => s"The delete request sent not delivered"
-      }
+      val resp = cloriko.dispatchRequestToMaster(delete.asProto).getOrElse(Task.now(s"The delete request sent was not delivered").runAsync)
+        .map {
+          case _: SlaveResponse => s"The delete operation was performed on ${delete.slaveId}."
+        }.recoverWith {
+          case e => Task.eval(s"The delete request failed with error: $e").runAsync
+        }
       Ok(IO.fromFuture(IO(resp)))
     }
 
     case req @ POST -> Root / "fetch" => {
       val fetchRequest: FetchRequest = req.as[FetchRequest].unsafeRunSync()
       println(s"FetchRequest entity received: $fetchRequest")
-      val resp = cloriko.dispatchFetchRequest(fetchRequest).runAsync.map[String] {
-        case _: SlaveResponse => "Slave response"
-        case _ => "Slave response not caught"
+
+      val request: Future[String] = cloriko.dispatchRequestToMaster(fetchRequest.asProto).get.map {
+        slaveResponse => s"Slave response $slaveResponse"
       }
-      resp.foreach {
-        slaveResponse =>
-          println(s"Print fetch response on the screen $slaveResponse")
+      Thread.sleep(9000)
+      //Await.result(request, 5 seconds)
+      //.recoverWith { case e => Task.eval(s"The fetch request failed with error: $e").runAsync }
+      request.foreach { fetch => println(s"Returning fetch response to user $fetch") }
+      Ok { IO.fromFuture { IO { request } } }
+    }
+
+    case req @ GET -> Root / "fetchGet" => {
+      val fetchRequest: FetchRequest = genFetchRequest().copy(id = "randomId", username = "paualarco", slaveId = "randomSlaveId", fileName = "fileName1.yaml", path = "/sample/path")
+      println(s"FetchRequest entity received: $fetchRequest")
+
+      val request: Future[String] = cloriko.dispatchRequestToMaster(fetchRequest.asProto).get.map {
+        slaveResponse => s"Slave response $slaveResponse"
       }
-      Ok(IO.fromFuture(IO(resp)))
+      //Await.result(request, 5 seconds)
+      //.recoverWith { case e => Task.eval(s"The fetch request failed with error: $e").runAsync }
+      request.foreach { fetch => println(s"Returning fetch response to user $fetch") }
+      Ok { IO.fromFuture { IO { Task.eval[String]("HTTP RESPONSE").runAsync } } }
     }
   }
 }

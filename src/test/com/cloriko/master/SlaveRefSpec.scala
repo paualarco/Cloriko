@@ -5,6 +5,7 @@ import com.cloriko.master.Master.OperationId
 import com.cloriko.protobuf.protocol.Update
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpecLike}
+import com.cloriko.DecoderImplicits._
 
 class SlaveRefSpec extends WordSpecLike with Matchers with ScalaFutures with Generators {
 
@@ -16,22 +17,22 @@ class SlaveRefSpec extends WordSpecLike with Matchers with ScalaFutures with Gen
       val updateOp = genUpdate.sample.get
 
       //when
-      slaveRef.addPendingRequest(updateOp)
+      slaveRef.addPendingRequest(updateOp.asProto)
 
       //then
-      slaveRef.updateTrace.pendingUpdates shouldEqual Map(updateOp.id -> updateOp)
+      slaveRef.pendingResponse shouldEqual Map(updateOp.id -> updateOp.asProto)
     }
 
     "remove existing updates from pendingUpdates" in {
       //given
       val updateOp = genUpdate.sample.get
-      slaveRef.addPendingRequest(updateOp)
+      slaveRef.addPendingRequest(updateOp.asProto)
 
       //when
-      slaveRef.removePendingUpdate(updateOp.id)
+      slaveRef.removePendingResponse(updateOp.id)
 
       //then
-      slaveRef.updateTrace.pendingUpdates shouldEqual Map[OperationId, Update]().empty
+      slaveRef.pendingResponse shouldEqual Map[OperationId, Update]().empty
     }
 
   }

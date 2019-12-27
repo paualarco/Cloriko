@@ -8,7 +8,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatest.time.{Millis, Seconds, Span}
 import com.cloriko._
-import com.cloriko.slave.FileSystem.`./root`
+import com.cloriko.slave.FileSystem.`./root/data`
 import com.google.protobuf.ByteString
 
 import scala.concurrent.Future
@@ -23,7 +23,7 @@ class FileSystemSpec
   implicit override val patienceConfig: PatienceConfig =
     PatienceConfig(timeout = scaled(Span(10, Seconds)), interval = scaled(Span(100, Millis)))
 
-  FileSystem.createDir(FileSystem.`./root`)
+  FileSystem.createDir(FileSystem.`./root/data`)
 
 
   "The slave FileSystem" should {
@@ -45,8 +45,8 @@ class FileSystemSpec
 
       "the absolute dir path is given" in {
         //given a directory
-        val dirCreate = `./root` + "/create/test2/dirToCreate"
-        val dirNotCreate = `./root` + "/create/test2/dirNeverCreated"
+        val dirCreate = `./root/data` + "/create/test2/dirToCreate"
+        val dirNotCreate = `./root/data` + "/create/test2/dirNeverCreated"
 
         //when
         val created: Boolean = FileSystem.createDir(dirCreate)
@@ -80,10 +80,10 @@ class FileSystemSpec
 
       "a `File` instance is given" in {
         //given a directory
-        val createdAndDeletedDir = File(`./root` + "/delete/test2/dirToDelete")
+        val createdAndDeletedDir = File(`./root/data` + "/delete/test2/dirToDelete")
         val existedBeforeBeingCreated = createdAndDeletedDir.exists
         FileSystem.createDir(createdAndDeletedDir.getPath())
-        val dirNeverExisted = File(`./root` + "/delete/test2/dirNeverExisted")
+        val dirNeverExisted = File(`./root/data` + "/delete/test2/dirNeverExisted")
 
         //when
         val deletedExistingDir: Boolean = FileSystem.deleteDirRecursively(createdAndDeletedDir)
@@ -101,9 +101,9 @@ class FileSystemSpec
     "delete an intermediary `father` directory and all its sub directories and files" when {
       "a `Directory` instance is given" in {
         //given a directory
-        val fatherDir = File(`./root` + "/delete/test3")
+        val fatherDir = File(`./root/data` + "/delete/test3")
         FileSystem.createDir(fatherDir.getPath())
-        val childDir = File(`./root` + "/delete/test3/childDir")
+        val childDir = File(`./root/data` + "/delete/test3/childDir")
         FileSystem.createDir(childDir.getPath())
         val childFile = genSlaveFile().copy(fileName = "childFile.txt", path = "/delete/test3")
         FileSystem.createFile(childFile)
@@ -147,8 +147,8 @@ class FileSystemSpec
         FileSystem.createFile(initialFile).runAsync.futureValue
 
         //when
-        val fileRef: FileReference = FileReference(initialFile.fileId, initialFile.fileName, initialFile.path)
-        val scannedFile: SlaveFile = FileSystem.scanFile(fileRef)
+        val fileRef: FileReference = FileReference(initialFile.fileName, initialFile.path)
+        val scannedFile = FileSystem.scanFile(fileRef)
 
         //then
         scannedFile shouldEqual initialFile
@@ -158,13 +158,13 @@ class FileSystemSpec
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    FileSystem.deleteDirRecursively(File(FileSystem.`./root`))
-    FileSystem.createDir(FileSystem.`./root`)
+    FileSystem.deleteDirRecursively(File(FileSystem.`./root/data`))
+    FileSystem.createDir(FileSystem.`./root/data`)
   }
 
   override def afterAll(): Unit = {
     super.afterAll()
-    FileSystem.deleteDirRecursively(File(FileSystem.`./root`))
+    FileSystem.deleteDirRecursively(File(FileSystem.`./root/data`))
   }
 
   object File {
