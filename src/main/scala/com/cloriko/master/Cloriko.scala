@@ -6,6 +6,7 @@ import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import com.cloriko.DecoderImplicits._
 import com.cloriko.Generators
+import com.cloriko.master.UserAuthenticator.SignInResult
 import monix.execution.CancelableFuture
 
 import scala.concurrent.duration._
@@ -14,9 +15,9 @@ class Cloriko extends Generators {
   var masters: Map[String, Master] = Map() //username -> Master ActorRef
 
   def joinRequest(id: String, username: String, password: String, slaveId: String): Task[Boolean] = {
-    val futureAuthentication = UserAuthenticator.authenticate(username, password)
+    val futureAuthentication = UserAuthenticator.signIn(username, password)
     futureAuthentication.map {
-      case true => {
+      case SignInResult.AUTHENTICATED => {
         masters.get(username) match {
           case Some(master) => {
             println(s"Cloriko Info - Created master for user $username")
@@ -31,11 +32,11 @@ class Cloriko extends Generators {
         }
         true //todo check if the slave was already part of the quorum
       }
-      case false => {
+      case SignInResult.USER_NOT_EXISTS => {
         println(s"JoinRequest denied since username $username did not exist")
         false
       }
-      case _ => {
+      case SignInResult.REJECTED => {
         println(s"JoinRequest rejected since password was incorrenct username $username ")
         false
       }

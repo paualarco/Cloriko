@@ -52,14 +52,12 @@ class Master(username: String) extends Generators {
         temporaryConsumer = slaveResponses.consumeWith(consumerIdFilter(fetchResponseSubscriber, opId)).runAsync
         temporaryConsumer
     }
-    val future = fetchResponseObservable.firstOrElseL(genFetchResponse().asProto)
-    temporaryConsumer.cancel()
+    val future = fetchResponseObservable.firstL
+    //temporaryConsumer.cancel()
     future.runAsync
   }
 
-
   def sendRequest(request: MasterRequest): Option[CancelableFuture[SlaveResponse]] = {
-
     slaves.get(request.slaveId) match {
       case Some(slave: SlaveRef) => {
         slave.grpcChannel match {

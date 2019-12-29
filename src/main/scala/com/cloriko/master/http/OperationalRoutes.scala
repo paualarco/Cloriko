@@ -3,11 +3,11 @@ package com.cloriko.master.http
 import cats.effect.IO
 import com.cloriko.DecoderImplicits._
 import com.cloriko.master.Cloriko
-import com.cloriko.protobuf.protocol.{Delete, FetchRequest, File, FileReference, SlaveResponse, Update}
+import com.cloriko.protobuf.protocol.{ Delete, FetchRequest, File, FileReference, SlaveResponse, Update }
 import monix.execution.Scheduler.Implicits.global
 import org.http4s.HttpRoutes
 import org.http4s.circe.jsonOf
-import org.http4s.dsl.io.{->, /, Ok, POST, Root}
+import org.http4s.dsl.io.{ ->, /, Ok, POST, Root }
 
 import scala.util.Random
 import cats.effect._
@@ -26,8 +26,7 @@ import monix.eval.Task
 import monix.execution.CancelableFuture
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
-
+import scala.concurrent.{ Await, Future }
 
 trait OperationalRoutes extends Generators {
 
@@ -76,15 +75,13 @@ trait OperationalRoutes extends Generators {
     case req @ POST -> Root / "fetch" => {
       val fetchRequest: FetchRequest = req.as[FetchRequest].unsafeRunSync()
       println(s"FetchRequest entity received: $fetchRequest")
-
       val request: Future[String] = cloriko.dispatchRequestToMaster(fetchRequest.asProto).get.map {
         slaveResponse => s"Slave response $slaveResponse"
       }
-      Thread.sleep(9000)
-      //Await.result(request, 5 seconds)
-      //.recoverWith { case e => Task.eval(s"The fetch request failed with error: $e").runAsync }
       request.foreach { fetch => println(s"Returning fetch response to user $fetch") }
-      Ok { IO.fromFuture { IO { request } } }
+      val result: String = IO.fromFuture { IO { request } }.unsafeRunSync()
+      println(s"Final result $result")
+      Ok(s"Result")
     }
 
     case req @ GET -> Root / "fetchGet" => {

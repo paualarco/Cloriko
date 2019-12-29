@@ -148,7 +148,7 @@ class FileSystemSpec
 
         //when
         val fileRef: FileReference = FileReference(initialFile.fileName, initialFile.path)
-        val scannedFile = FileSystem.scanFile(fileRef)
+        val scannedFile = FileSystem.scanFile(fileRef).runAsync.futureValue
 
         //then
         scannedFile shouldEqual initialFile

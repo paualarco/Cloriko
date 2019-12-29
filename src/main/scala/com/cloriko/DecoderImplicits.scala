@@ -19,7 +19,7 @@ object DecoderImplicits {
             sealedValue.fetchRequest match {
               case Some(fileRequest) => OperationDescriptior(fileRequest.id, fileRequest.username, fileRequest.slaveId)
               case _ =>
-                sealedValue.overviewRequest match {
+                sealedValue.overviewRequest match { //todo update
                   case Some(overviewRequest) => OperationDescriptior(overviewRequest.id, overviewRequest.username, "fakeSlaveId")
                   case _ => OperationDescriptior("fakeId", "fakeUsername", "fakeSlaveId")
                 }
