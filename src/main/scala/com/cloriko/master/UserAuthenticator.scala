@@ -17,7 +17,7 @@ object UserAuthenticator {
           SignUpResult.ALREADY_EXISTED
         }
         case None => {
-          if(username.length < 5) {
+          if (username.length < 5) {
             println(s"UserAuthenticator - SignUp rejected since username length was smaller than 5, username: $username")
             SignUpResult.REJECTED
           } else {

@@ -1,7 +1,7 @@
 package com.cloriko.master
 
 import com.cloriko.master.grpc.GrpcServer.GrpcChannel
-import com.cloriko.protobuf.protocol.{FetchRequest, MasterRequest, SlaveResponse}
+import com.cloriko.protobuf.protocol.{ FetchRequest, MasterRequest, SlaveResponse }
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import com.cloriko.DecoderImplicits._

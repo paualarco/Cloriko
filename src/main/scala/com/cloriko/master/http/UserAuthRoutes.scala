@@ -2,12 +2,12 @@ package com.cloriko.master.http
 
 import cats.effect.IO
 import com.cloriko.DecoderImplicits._
-import com.cloriko.master.{Cloriko, UserAuthenticator}
-import com.cloriko.protobuf.protocol.{Delete, FetchRequest, File, FileReference, Update}
+import com.cloriko.master.{ Cloriko, UserAuthenticator }
+import com.cloriko.protobuf.protocol.{ Delete, FetchRequest, File, FileReference, Update }
 import monix.execution.Scheduler.Implicits.global
 import org.http4s.HttpRoutes
 import org.http4s.circe.jsonOf
-import org.http4s.dsl.io.{->, /, Ok, POST, Root}
+import org.http4s.dsl.io.{ ->, /, Ok, POST, Root }
 
 import scala.util.Random
 import cats.effect._
@@ -20,10 +20,10 @@ import org.http4s.circe._
 import org.http4s.dsl.io._
 import org.http4s.multipart.Multipart
 import cats.implicits._
-import com.cloriko.master.UserAuthenticator.{SignInResult, SignUpResult}
+import com.cloriko.master.UserAuthenticator.{ SignInResult, SignUpResult }
 import com.cloriko.master.UserAuthenticator.SignInResult.SignInResult
 import com.cloriko.master.UserAuthenticator.SignUpResult.SignUpResult
-import com.cloriko.master.http.UserAuthRoutes.{SignInEntity, SignUpEntity}
+import com.cloriko.master.http.UserAuthRoutes.{ SignInEntity, SignUpEntity }
 import monix.execution.CancelableFuture
 import monix.execution.Scheduler.Implicits.global
 import monix.eval.Task
@@ -54,7 +54,6 @@ trait UserAuthRoutes {
       }
     }
 
-
     case req @ POST -> Root / "signIn" => {
       val logInRequestEntity: SignInEntity = req.as[SignInEntity].unsafeRunSync()
       println(s"LogIn entity received: $logInRequestEntity")
@@ -62,8 +61,8 @@ trait UserAuthRoutes {
       println(s"WebServer - User log in request received for user $username")
       val signInFutureResult: CancelableFuture[SignInResult] = UserAuthenticator.signIn(username, password).runAsync
       (IO.fromFuture(IO(signInFutureResult))).unsafeRunSync() match {
-        case SignInResult.AUTHENTICATED   => Accepted("UserAuthenticated")
-        case SignInResult.REJECTED        => Forbidden("Bad authentication, user rejected ")
+        case SignInResult.AUTHENTICATED => Accepted("UserAuthenticated")
+        case SignInResult.REJECTED => Forbidden("Bad authentication, user rejected ")
         case SignInResult.USER_NOT_EXISTS => NotFound("Username does not exist")
       }
     }

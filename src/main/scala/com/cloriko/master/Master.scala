@@ -11,6 +11,13 @@ import monix.execution.CancelableFuture
 import monix.reactive
 import monix.reactive.observers.Subscriber
 import monix.execution.Scheduler.Implicits.global
+import scala.concurrent.duration._
+import cats.implicits._
+import cats.effect._
+import monix.eval.Task
+import monix.execution.Ack
+import monix.reactive.subjects.ConcurrentSubject
+import monix.reactive.{ MulticastStrategy, Observable, Observer }
 
 class Master(username: String) extends Generators {
 
@@ -31,6 +38,19 @@ class Master(username: String) extends Generators {
     }
   }
 
+  def consumerIdFilterSubject(fetchResponseSubscriber: ConcurrentSubject[SlaveResponse, SlaveResponse], id: String) = {
+    Consumer.foreach[SlaveResponse] {
+      println(s"Master - Starting to consume filter with id: $id")
+      slaveResponse =>
+        println(s"Master - Slave response received $slaveResponse ")
+        println(s"Master - DEBUG - Slave id ${slaveResponse.id} == id $id")
+        if (slaveResponse.id == id) {
+          println(s"Master - Fetch response caught at master with id: $id")
+          fetchResponseSubscriber.feed(List(slaveResponse))
+          fetchResponseSubscriber.completedL.runAsync
+        }
+    }
+  }
   def consumerIdFilter(fetchResponseSubscriber: Subscriber.Sync[SlaveResponse], id: String) = {
     Consumer.foreach[SlaveResponse] {
       println(s"Master - Starting to consume filter with id: $id")
@@ -39,9 +59,20 @@ class Master(username: String) extends Generators {
         println(s"Master - DEBUG - Slave id ${slaveResponse.id} == id $id")
         if (slaveResponse.id == id) {
           println(s"Master - Fetch response caught at master with id: $id")
-          fetchResponseSubscriber.onNext(slaveResponse)
+          fetchResponseSubscriber.onNextAll(List(slaveResponse))
+
         }
     }
+  }
+  def awaitFetchResponseConcurrentSubject(opId: String, slaveResponses: reactive.Observable[SlaveResponse]): CancelableFuture[SlaveResponse] = {
+    println(s"Master - Awaiting fetch response with id $opId")
+    val subject: ConcurrentSubject[SlaveResponse, SlaveResponse] = ConcurrentSubject[SlaveResponse](MulticastStrategy.replay)
+    val temporaryConsumer = slaveResponses.consumeWith(consumerIdFilterSubject(subject, opId)).runAsync
+
+    //val future = fetchResponseObservable.firstL
+    //temporaryConsumer.cancel()
+    //future.runAsync
+    subject.firstL.runAsync
   }
 
   def awaitFetchResponse(opId: String, slaveResponses: reactive.Observable[SlaveResponse]): CancelableFuture[SlaveResponse] = {
@@ -52,9 +83,11 @@ class Master(username: String) extends Generators {
         temporaryConsumer = slaveResponses.consumeWith(consumerIdFilter(fetchResponseSubscriber, opId)).runAsync
         temporaryConsumer
     }
+
     val future = fetchResponseObservable.firstL
-    //temporaryConsumer.cancel()
+    temporaryConsumer.cancel()
     future.runAsync
+
   }
 
   def sendRequest(request: MasterRequest): Option[CancelableFuture[SlaveResponse]] = {
@@ -64,7 +97,7 @@ class Master(username: String) extends Generators {
           case Some(channel) => {
             println(s"Master - Update operation sent to slave ${request.slaveId} of username: ${request.username}")
             slave.addPendingRequest(request.asProto)
-            val fetchResponse = awaitFetchResponse(request.id, channel.downStream)
+            val fetchResponse = awaitFetchResponseConcurrentSubject(request.id, channel.downStream)
             channel.upStream.onNext(request.asProto)
             Some(fetchResponse)
           }
@@ -110,7 +143,6 @@ class Master(username: String) extends Generators {
         }
     }
   }
-
 }
 
 object Master {

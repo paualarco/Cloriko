@@ -1,21 +1,22 @@
 import Dependencies._
 
-enablePlugins(JavaAppPackaging, DockerPlugin)
+enablePlugins(JavaAppPackaging, DockerPlugin, SbtTwirl)
 
-mainClass in Compile := Some("com.cloriko.QuickstartServer")
+mainClass in Compile := Some("com.cloriko.WebServer")
 
 PB.protocVersion := "-v3.10.0"
 
 lazy val root = (project in file(".")).
   settings(
     inThisBuild(List(
-      organization    := "com.cloriko",
-      scalaVersion    := "2.12.4",
-      version         := Version.version
+      organization := "com.cloriko",
+      scalaVersion := "2.12.4",
+      version      := Version.version
     )),
     name := "Cloriko",
     libraryDependencies ++= ProjectDependencies
   )
+  //.enablePlugins()
 
 PB.targets in Compile := Seq(
   // compile your proto files into scala source files
@@ -26,6 +27,7 @@ PB.targets in Compile := Seq(
 scalacOptions += "-Ylog-classpath"
 resolvers += Resolver.bintrayRepo("beyondthelines", "maven")
 scalacOptions ++= Seq("-Ypartial-unification")
+
 
 
 

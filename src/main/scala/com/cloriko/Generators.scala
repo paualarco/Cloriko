@@ -1,8 +1,8 @@
 package com.cloriko
 
 import com.cloriko.master.UserAuthenticator.SignUpResult
-import com.cloriko.master.http.UserAuthRoutes.{SignInEntity, SignUpEntity}
-import com.cloriko.protobuf.protocol.{FetchRequest, FetchResponse, File, Update}
+import com.cloriko.master.http.UserAuthRoutes.{ SignInEntity, SignUpEntity }
+import com.cloriko.protobuf.protocol.{ FetchRequest, FetchResponse, File, Update }
 import com.google.protobuf.ByteString
 import org.scalacheck.Gen
 
@@ -10,7 +10,7 @@ trait Generators {
 
   val genRange: Int => Int = range => Gen.chooseNum(1, range).sample.get //todo fix
   val genString = (n: Int) => Gen.listOfN(n, Gen.alphaChar).sample.get.mkString("")
-  val genRand1000: () => String =  () => genRange(1000).toString //todo fix
+  val genRand1000: () => String = () => genRange(1000).toString //todo fix
   val genWithPrefixAndLen: (String, Int) => String = (prefix, lenght) => s"$prefix${genRand1000()}" //todo fix
   val genFileType = () => Gen.oneOf(List(".txt", ".json", ".xml")).sample.get
   val genWithPrefixIntAndSuffix = (prefix: String, lenght: Int, suffix: String) => s"$prefix${genRange(lenght)}$suffix" //todo fix

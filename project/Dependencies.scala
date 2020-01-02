@@ -41,10 +41,13 @@ object Dependencies {
     "org.http4s"                %% "http4s-dsl"            % DependencyVersions.Http4s,
     "org.http4s"                %% "http4s-circe"          % DependencyVersions.Http4s,
     "org.http4s"                %% "http4s-blaze-server"   % DependencyVersions.Http4s,
+    "org.http4s"                %% "http4s-twirl"          % DependencyVersions.Http4s,
+    "com.typesafe.play"         %% "twirl-api"             % "1.5.0",
     "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck
   )
 
   private val TestDependencies = Seq(
+    "com.typesafe.play"         %% "twirl-api"             % "1.5.0",
     "org.scalatest"             %% "scalatest"             % DependencyVersions.Scalatest,
     "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck,
     "org.mockito"               %  "mockito-core"          % DependencyVersions.Mockito,

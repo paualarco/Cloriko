@@ -24,6 +24,7 @@ object SlaveApp extends IOApp {
       }
       Ok(IO.fromFuture(IO(futureResponse)))
     }
+
     case GET -> Root / "join" => {
       Ok(IO("futureResponse"))
     }
