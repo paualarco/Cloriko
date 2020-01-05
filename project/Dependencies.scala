@@ -19,6 +19,12 @@ object Dependencies {
     val Mockito = "2.18.3"
   }
 
+  val FrontendDependencies = Seq(
+    "com.typesafe.play"         %% "twirl-api"             % "1.5.0",
+    "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck,
+    "org.webjars" % "bootstrap" % "3.3.6"
+  )
+
   private val MainDependencies = Seq(
     "io.grpc"                   % "grpc-netty"             % scalapb.compiler.Version.grpcJavaVersion,
     "com.thesamet.scalapb"      %% "scalapb-runtime-grpc"  % scalapb.compiler.Version.scalapbVersion,
@@ -42,9 +48,7 @@ object Dependencies {
     "org.http4s"                %% "http4s-circe"          % DependencyVersions.Http4s,
     "org.http4s"                %% "http4s-blaze-server"   % DependencyVersions.Http4s,
     "org.http4s"                %% "http4s-twirl"          % DependencyVersions.Http4s,
-    "com.typesafe.play"         %% "twirl-api"             % "1.5.0",
     "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck,
-    "org.webjars" % "bootstrap" % "3.3.6"
   )
 
   private val TestDependencies = Seq(

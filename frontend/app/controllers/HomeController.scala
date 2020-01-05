@@ -22,12 +22,4 @@ class HomeController @Inject() (cc: ControllerComponents) extends AbstractContro
     Ok(views.html.index(List("")))
   }
 
-  def explore() = Action { implicit request: Request[AnyContent] =>
-    Ok(views.html.explore())
-  }
-
-  def tutorial() = Action { implicit request: Request[AnyContent] =>
-    Ok(views.html.tutorial())
-  }
-
 }
