@@ -2,7 +2,7 @@ package com.cloriko.master.http
 
 import cats.effect.IO
 import com.cloriko.DecoderImplicits._
-import com.cloriko.master.{ Cloriko, UserAuthenticator }
+import com.cloriko.master.{ Gateway, UserAuthenticator }
 import com.cloriko.protobuf.protocol.{ Delete, FetchRequest, File, FileReference, Update }
 import monix.execution.Scheduler.Implicits.global
 import org.http4s.HttpRoutes
@@ -19,23 +19,45 @@ import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.io._
 import org.http4s.multipart.Multipart
+import org.http4s.twirl.TwirlInstances
 import cats.implicits._
 import com.cloriko.master.UserAuthenticator.{ SignInResult, SignUpResult }
 import com.cloriko.master.UserAuthenticator.SignInResult.SignInResult
 import com.cloriko.master.UserAuthenticator.SignUpResult.SignUpResult
-import com.cloriko.master.http.UserAuthRoutes.{ SignInEntity, SignUpEntity }
+import com.cloriko.master.http.UserRoutes.{ SignInEntity, SignUpEntity }
 import monix.execution.CancelableFuture
 import monix.execution.Scheduler.Implicits.global
 import monix.eval.Task
+
 import scala.concurrent.Future
 
-trait UserAuthRoutes {
+trait UserRoutes extends TwirlInstances {
 
-  val cloriko: Cloriko
+  val cloriko: Gateway
   implicit val signUpRequestEntityDecoder = jsonOf[IO, SignUpEntity]
   implicit val logInRequestEntityDecoder = jsonOf[IO, SignInEntity]
 
   lazy val userRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+
+    case req @ GET -> Root => {
+      println("Index request received")
+      Accepted(views.html.index(List("")))
+    }
+
+    case req @ GET -> Root / "html" => {
+      println("Html request received")
+      Accepted(views.html.index(List("")))
+    }
+
+    case req @ GET -> Root / "main" => {
+      Accepted(views.html.main(List("")))
+    }
+    case req @ GET -> Root / "signUp" => {
+      Accepted(views.html.sign_up(List("")))
+    }
+    case req @ GET -> Root / "signIn" => {
+      Accepted(views.html.sign_in(List("")))
+    }
 
     case req @ POST -> Root / "signUp" => {
       val signUpRequest: SignUpEntity = req.as[SignUpEntity].unsafeRunSync()
@@ -47,7 +69,7 @@ trait UserAuthRoutes {
         .runAsync
       //TODO Makes no sense, is there no onSuccess( StatusCode()) ?
       IO.fromFuture(IO(signUpFutureResult)).unsafeRunSync() match {
-        case SignUpResult.CREATED => Created("UserAuthenticated")
+        case SignUpResult.CREATED => Created(views.html.main(List("")))
         case SignUpResult.REJECTED => BadRequest("Bad user specifications")
         case SignUpResult.ALREADY_EXISTED => Ok("Username already existed")
         case _ => InternalServerError("")
@@ -69,7 +91,7 @@ trait UserAuthRoutes {
   }
 }
 
-object UserAuthRoutes {
+object UserRoutes {
   case class SignInEntity(username: String, password: String)
-  case class SignUpEntity(userName: String, password: String, name: String, lastName: String, email: String)
+  case class SignUpEntity(username: String, password: String, name: String, last_name: String, email: String)
 }

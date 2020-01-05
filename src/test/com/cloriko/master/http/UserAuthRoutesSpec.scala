@@ -1,7 +1,7 @@
 package com.cloriko.master.http
 
 import com.cloriko.Generators
-import com.cloriko.master.http.UserAuthRoutes.{SignInEntity, SignUpEntity}
+import com.cloriko.master.http.UserRoutes.{SignInEntity, SignUpEntity}
 import cats.effect.IO
 import org.http4s.{Response, Status}
 import org.scalatest.concurrent.ScalaFutures

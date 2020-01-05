@@ -6,7 +6,7 @@ import com.cloriko.config.AppConfig
 import com.cloriko.master.grpc.GrpcServer
 import org.http4s.implicits._
 import org.http4s.server.blaze._
-import com.cloriko.master.http.{ OperationalRoutes, UserAuthRoutes }
+import com.cloriko.master.http.{ OperationalRoutes, UserRoutes }
 import org.http4s.server.Router
 import scala.concurrent.Future
 import cats.implicits._
@@ -17,9 +17,9 @@ import org.http4s.implicits._
 import org.http4s.server.blaze._
 import monix.execution.Scheduler.Implicits.global
 
-object WebServer extends IOApp with OperationalRoutes with UserAuthRoutes {
+object WebServer extends IOApp with OperationalRoutes with UserRoutes {
 
-  val cloriko: Cloriko = new Cloriko
+  val cloriko: Gateway = new Gateway
 
   val config: AppConfig = AppConfig.load()
   val host = config.server.host

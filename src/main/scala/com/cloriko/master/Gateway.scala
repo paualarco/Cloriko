@@ -11,7 +11,7 @@ import monix.execution.CancelableFuture
 
 import scala.concurrent.duration._
 
-class Cloriko extends Generators {
+class Gateway extends Generators {
   var masters: Map[String, Master] = Map() //username -> Master ActorRef
 
   def joinRequest(id: String, username: String, password: String, slaveId: String): Task[Boolean] = {

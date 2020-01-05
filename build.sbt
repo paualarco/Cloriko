@@ -1,13 +1,14 @@
 import Dependencies._
 
-enablePlugins(JavaAppPackaging, DockerPlugin, SbtTwirl)
+//enablePlugins(JavaAppPackaging, DockerPlugin, PlayScala)
 
 mainClass in Compile := Some("com.cloriko.WebServer")
 
 PB.protocVersion := "-v3.10.0"
 
-lazy val root = (project in file(".")).
-  settings(
+lazy val root = (project in file("."))
+  .enablePlugins(JavaAppPackaging, DockerPlugin, PlayScala)
+  .settings(
     inThisBuild(List(
       organization := "com.cloriko",
       scalaVersion := "2.12.4",
@@ -16,7 +17,6 @@ lazy val root = (project in file(".")).
     name := "Cloriko",
     libraryDependencies ++= ProjectDependencies
   )
-  //.enablePlugins()
 
 PB.targets in Compile := Seq(
   // compile your proto files into scala source files

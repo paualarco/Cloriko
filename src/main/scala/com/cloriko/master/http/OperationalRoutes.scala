@@ -2,7 +2,7 @@ package com.cloriko.master.http
 
 import cats.effect.IO
 import com.cloriko.DecoderImplicits._
-import com.cloriko.master.Cloriko
+import com.cloriko.master.Gateway
 import com.cloriko.protobuf.protocol.{ Delete, FetchRequest, File, FileReference, SlaveResponse, Update }
 import monix.execution.Scheduler.Implicits.global
 import org.http4s.circe.jsonOf
@@ -33,9 +33,10 @@ import monix.execution.Scheduler
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
 import org.http4s.twirl.TwirlInstances
+
 trait OperationalRoutes extends TwirlInstances with Generators {
 
-  val cloriko: Cloriko
+  val cloriko: Gateway
   implicit val deleteDecoder = jsonOf[IO, Delete]
   implicit val fileReferenceDecoder = jsonOf[IO, FileReference]
   implicit val fetchRequestDecoder = jsonOf[IO, FetchRequest]
@@ -93,11 +94,7 @@ trait OperationalRoutes extends TwirlInstances with Generators {
         //val value = request.value
         println(s"Is completed ${request.isCompleted}")
         println(s"Value ${request.value}")
-        Accepted(html.index(List("")))
-      }
-
-      case req @ GET -> Root / "html" => {
-        Accepted(html.index(List("")))
+        Accepted(views.html.index(List("")))
       }
 
       case req @ GET -> Root / "fetchGet" => {

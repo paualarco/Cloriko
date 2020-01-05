@@ -43,7 +43,8 @@ object Dependencies {
     "org.http4s"                %% "http4s-blaze-server"   % DependencyVersions.Http4s,
     "org.http4s"                %% "http4s-twirl"          % DependencyVersions.Http4s,
     "com.typesafe.play"         %% "twirl-api"             % "1.5.0",
-    "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck
+    "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck,
+    "org.webjars" % "bootstrap" % "3.3.6"
   )
 
   private val TestDependencies = Seq(
@@ -52,7 +53,9 @@ object Dependencies {
     "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck,
     "org.mockito"               %  "mockito-core"          % DependencyVersions.Mockito,
     "com.typesafe.akka"         %% "akka-http"             % DependencyVersions.AkkaHttp,
-    "com.typesafe.akka"         %% "akka-stream"           % DependencyVersions.Akka
+    "com.typesafe.akka"         %% "akka-stream"           % DependencyVersions.Akka,
+    "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0"
+
   ).map( _ % Test)
 
   val ProjectDependencies: Seq[ModuleID] = MainDependencies ++ TestDependencies

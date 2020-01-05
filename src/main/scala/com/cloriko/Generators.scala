@@ -1,7 +1,7 @@
 package com.cloriko
 
 import com.cloriko.master.UserAuthenticator.SignUpResult
-import com.cloriko.master.http.UserAuthRoutes.{ SignInEntity, SignUpEntity }
+import com.cloriko.master.http.UserRoutes.{ SignInEntity, SignUpEntity }
 import com.cloriko.protobuf.protocol.{ FetchRequest, FetchResponse, File, Update }
 import com.google.protobuf.ByteString
 import org.scalacheck.Gen
