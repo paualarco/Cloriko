@@ -1,7 +1,5 @@
-package com.cloriko
+package com.cloriko.common
 
-import com.cloriko.master.UserAuthenticator.SignUpResult
-import com.cloriko.master.http.UserRoutes.{ SignInEntity, SignUpEntity }
 import com.cloriko.protobuf.protocol.{ FetchRequest, FetchResponse, File, Update }
 import com.google.protobuf.ByteString
 import org.scalacheck.Gen
@@ -26,6 +24,6 @@ trait Generators {
   val genSlaveFile: () => File = () => File(genFileName(), generatePath(), genByteString(50))
   val genFetchResponse: () => FetchResponse = () => FetchResponse(genString(10), genUsername(), genSlaveId(), genFileName(), generatePath(), Some(genSlaveFile()))
   val genFetchRequest: () => FetchRequest = () => FetchRequest(genString(10), genUsername(), genSlaveId(), genFileName(), generatePath())
-  val genSignInEntity: () => SignInEntity = () => SignInEntity(genUsername(), genString(10))
-  val genSignUpEntity: () => SignUpEntity = () => SignUpEntity(genUsername(), genString(10), genString(7), genString(7), genString(10))
+  // val genSignInEntity: () => SignInEntity = () => SignInEntity(genUsername(), genString(10))
+  //val genSignUpEntity: () => SignUpEntity = () => SignUpEntity(genUsername(), genString(10), genString(7), genString(7), genString(10))
 }

@@ -1,7 +1,6 @@
 package com.cloriko.master.http
 
 import cats.effect.IO
-import com.cloriko.DecoderImplicits._
 import com.cloriko.master.Gateway
 import com.cloriko.protobuf.protocol.{ Delete, FetchRequest, File, FileReference, SlaveResponse, Update }
 import monix.execution.Scheduler.Implicits.global
@@ -23,13 +22,13 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.twirl.TwirlInstances
 import play.twirl.api.HtmlFormat
 import cats.implicits._
-import com.cloriko.Generators
+import com.cloriko.common.Generators
 import monix.execution.Scheduler.Implicits.global
 import monix.eval.Task
 import monix.execution.CancelableFuture
 import org.http4s.dsl.Http4sDsl
 import monix.execution.Scheduler
-
+import com.cloriko.common.DecoderImplicits._
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
 import org.http4s.twirl.TwirlInstances

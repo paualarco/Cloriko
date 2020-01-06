@@ -26,25 +26,32 @@ lazy val frontend = (project in file("frontend"))
   )
   .enablePlugins(JavaAppPackaging, DockerPlugin, PlayScala)
 
-lazy val master = (project in file("master"))
+lazy val common = (project in file("common"))
   .settings(
-    name := "cloriko-master",
+    name := "cloriko-common",
     libraryDependencies ++= ProjectDependencies,
     version := Version.version
   )
   .dependsOn(frontend % "compile->compile;test->test")
   .enablePlugins(JavaAppPackaging, DockerPlugin)
 
+lazy val master = (project in file("master"))
+  .settings(
+    name := "cloriko-master",
+    libraryDependencies ++= ProjectDependencies,
+    version := Version.version
+  )
+  .dependsOn(frontend % "compile->compile;test->test", common % "compile->compile;test->test")
+  .enablePlugins(JavaAppPackaging, DockerPlugin)
 
-PB.targets in Compile := Seq(
-  // compile your proto files into scala source files
-  scalapb.gen() -> (sourceManaged in Compile).value,
-  // generate the GRPCMonix source code
-  grpcmonix.generators.GrpcMonixGenerator() -> (sourceManaged in Compile).value
-)
-scalacOptions += "-Ylog-classpath"
-resolvers += Resolver.bintrayRepo("beyondthelines", "maven")
-scalacOptions ++= Seq("-Ypartial-unification")
+lazy val slave = (project in file("slave"))
+  .settings(
+    name := "cloriko-slave",
+    libraryDependencies ++= ProjectDependencies,
+    version := Version.version
+  )
+  .dependsOn(common % "compile->compile;test->test", master % "compile->compile;test->test")
+  .enablePlugins(JavaAppPackaging, DockerPlugin)
 
 
 

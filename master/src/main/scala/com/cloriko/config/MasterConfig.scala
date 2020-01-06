@@ -3,7 +3,7 @@ package com.cloriko.config
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter.ISO_DATE
 
-import com.cloriko.config.AppConfig.WebServerConfiguration
+import MasterConfig.WebServerConfiguration
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.generic.semiauto._
@@ -15,21 +15,21 @@ import pureconfig.generic.auto._
 
 import scala.concurrent.duration.FiniteDuration
 
-case class AppConfig(server: WebServerConfiguration) {
+case class MasterConfig(server: WebServerConfiguration) {
   def toJson: String = this.asJson.noSpaces
 }
 
-object AppConfig {
+object MasterConfig {
 
-  implicit val confHint: ProductHint[AppConfig] = ProductHint[AppConfig](ConfigFieldMapping(CamelCase, KebabCase))
+  implicit val confHint: ProductHint[MasterConfig] = ProductHint[MasterConfig](ConfigFieldMapping(CamelCase, KebabCase))
 
   implicit val localDateConvert: ConfigConvert[LocalDate] = localDateConfigConvert(ISO_DATE)
 
-  implicit val encodeAppConfig: Encoder[AppConfig] = deriveEncoder
+  implicit val encodeAppConfig: Encoder[MasterConfig] = deriveEncoder
   implicit val encodeDuration: Encoder[FiniteDuration] = Encoder.instance(duration ⇒ Json.fromString(duration.toString))
   implicit val encodeLocalDate: Encoder[LocalDate] = Encoder.instance(date ⇒ Json.fromString(date.format(ISO_DATE)))
 
-  def load(): AppConfig = loadConfigOrThrow[AppConfig]
+  def load(): MasterConfig = loadConfigOrThrow[MasterConfig]
 
   case class WebServerConfiguration(
     host: String,

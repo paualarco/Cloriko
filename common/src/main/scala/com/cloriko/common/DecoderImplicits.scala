@@ -1,8 +1,6 @@
-package com.cloriko
+package com.cloriko.common
 
 import com.cloriko.protobuf.protocol.{ MasterRequest, SlaveResponse }
-
-import scala.language.implicitConversions
 
 object DecoderImplicits {
 

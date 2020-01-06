@@ -1,13 +1,13 @@
 package com.cloriko.master
 
-import com.cloriko.master.grpc.GrpcServer.GrpcChannel
-import com.cloriko.protobuf.protocol.{ FetchRequest, MasterRequest, SlaveResponse }
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
-import com.cloriko.DecoderImplicits._
-import com.cloriko.Generators
-import com.cloriko.master.UserAuthenticator.SignInResult
 import monix.execution.CancelableFuture
+import com.cloriko.common.Generators
+import com.cloriko.master.grpc.GrpcServer.GrpcChannel
+import com.cloriko.protobuf.protocol.{ FetchRequest, MasterRequest, SlaveResponse }
+import com.cloriko.master.UserAuthenticator.SignInResult
+import com.cloriko.common.DecoderImplicits._
 
 import scala.concurrent.duration._
 

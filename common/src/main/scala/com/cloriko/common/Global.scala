@@ -1,12 +1,12 @@
-package com
+package com.cloriko.common
 
 import com.cloriko.protobuf.protocol.{ Directory, File, FileReference }
-import com.cloriko.slave.FileSystem.{ /, `./root/data` }
 import com.google.protobuf.ByteString
 
-import scala.language.implicitConversions
-
-package object cloriko {
+object Global {
+  val `./root/data`: String = "./root/data"
+  val `~` = "~"
+  val `/`: String = "/"
 
   implicit def dirUtils(dir: Directory): DirectoryUtils = DirectoryUtils(dir)
   case class DirectoryUtils(directory: Directory) {
@@ -25,5 +25,4 @@ package object cloriko {
       File(fileRef.fileName, fileRef.path, data)
     }
   }
-
 }

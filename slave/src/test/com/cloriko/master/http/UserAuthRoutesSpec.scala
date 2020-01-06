@@ -13,9 +13,6 @@ class UserAuthRoutesSpec
     with Generators
     with HttpFixture {
 
-  val genSignInEntity: () => SignInEntity = () => SignInEntity(genUsername(), genString(10))
-  val genSignUpEntity: () => SignUpEntity = () => SignUpEntity(genUsername(), genString(10), genString(7), genString(7), genString(10))
-
   "A single SignUp http request" should {
 
     "return status code `Created`" when {

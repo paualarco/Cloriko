@@ -2,16 +2,17 @@ package com.cloriko.master
 
 import cats.implicits._
 import cats.effect.{ ExitCode, IO, IOApp }
-import com.cloriko.config.AppConfig
 import com.cloriko.master.grpc.GrpcServer
 import org.http4s.implicits._
 import org.http4s.server.blaze._
 import com.cloriko.master.http.{ OperationalRoutes, UserRoutes }
 import org.http4s.server.Router
+
 import scala.concurrent.Future
 import cats.implicits._
 import org.http4s.HttpRoutes
 import cats.effect.{ ExitCode, IO, IOApp }
+import com.cloriko.config.MasterConfig
 import org.http4s.dsl.io._
 import org.http4s.implicits._
 import org.http4s.server.blaze._
@@ -21,7 +22,7 @@ object WebServer extends IOApp with OperationalRoutes with UserRoutes {
 
   val cloriko: Gateway = new Gateway
 
-  val config: AppConfig = AppConfig.load()
+  val config: MasterConfig = MasterConfig.load()
   val host = config.server.host
   val port = config.server.port
 

@@ -1,7 +1,6 @@
 package com.cloriko.master.http
 
 import cats.effect.IO
-import com.cloriko.DecoderImplicits._
 import com.cloriko.master.{ Gateway, UserAuthenticator }
 import com.cloriko.protobuf.protocol.{ Delete, FetchRequest, File, FileReference, Update }
 import monix.execution.Scheduler.Implicits.global

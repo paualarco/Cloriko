@@ -2,7 +2,7 @@ package com.cloriko.slave
 
 import cats.implicits._
 import org.http4s.HttpRoutes
-import cats.effect.{ ExitCode, IO, IOApp }
+import cats.effect.{ExitCode, IO, IOApp}
 import org.http4s.dsl.io._
 import org.http4s.implicits._
 import org.http4s.server.blaze._

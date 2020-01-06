@@ -1,6 +1,5 @@
 package com.cloriko.master.grpc
 
-import com.cloriko.DecoderImplicits._
 import com.cloriko.protobuf.protocol.{ JoinReply, JoinRequest, _ }
 import com.cloriko.master.Gateway
 import io.grpc.{ Server, ServerBuilder }
@@ -9,7 +8,7 @@ import monix.reactive.{ Observable, OverflowStrategy }
 import com.cloriko.master.grpc.GrpcServer.GrpcChannel
 import monix.reactive.observers.Subscriber
 import monix.execution.Scheduler.Implicits.global
-
+import com.cloriko.common.DecoderImplicits._
 import scala.concurrent.duration._
 
 class GrpcServer(localEndPoint: String, cloriko: Gateway) {

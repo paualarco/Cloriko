@@ -3,7 +3,7 @@ package com.cloriko.master
 import com.cloriko.master.Master.OperationId
 import com.cloriko.master.grpc.GrpcServer.GrpcChannel
 import com.cloriko.protobuf.protocol.{ Directory, FileReference, MasterRequest, SlaveResponse }
-import com.cloriko.DecoderImplicits._
+import com.cloriko.common.DecoderImplicits._
 
 class SlaveRef(slaveId: String) {
   var snapshot: Directory = Directory("root", "root", "/", Seq[Directory](), Seq[FileReference]())

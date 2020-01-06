@@ -1,23 +1,21 @@
 package com.cloriko.master
 
-import com.cloriko.master.grpc.GrpcServer.GrpcChannel
-import com.cloriko.protobuf.protocol._
-import monix.eval.Task
-import monix.reactive.{ Consumer, Observable, OverflowStrategy }
+import monix.reactive.{ Consumer, OverflowStrategy }
 import Master.initialDir
-import com.cloriko.DecoderImplicits._
-import com.cloriko.Generators
 import monix.execution.CancelableFuture
 import monix.reactive
 import monix.reactive.observers.Subscriber
 import monix.execution.Scheduler.Implicits.global
+import monix.reactive.subjects.ConcurrentSubject
+import monix.reactive.{ MulticastStrategy, Observable, Observer }
 import scala.concurrent.duration._
 import cats.implicits._
 import cats.effect._
 import monix.eval.Task
-import monix.execution.Ack
-import monix.reactive.subjects.ConcurrentSubject
-import monix.reactive.{ MulticastStrategy, Observable, Observer }
+import com.cloriko.master.grpc.GrpcServer.GrpcChannel
+import com.cloriko.protobuf.protocol._
+import com.cloriko.common.Generators
+import com.cloriko.common.DecoderImplicits._
 
 class Master(username: String) extends Generators {
 

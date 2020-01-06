@@ -1,19 +1,19 @@
 package com.cloriko.slave
 
 import java.io.{ File, FileOutputStream }
+import java.nio.file.{ Files, Paths }
 
-import com.cloriko.protobuf.protocol.{ Delete, Directory, FileReference, File => SlaveFile }
 import com.google.protobuf.ByteString
 import monix.eval.Task
-import java.nio.file.{ Files, Paths }
 import monix.execution.Scheduler.Implicits.global
+import com.cloriko.protobuf.protocol.{ Delete, Directory, FileReference, File => SlaveFile }
+import com.cloriko.common.Global._
+
 import scala.util.{ Failure, Success, Try }
 
 object FileSystem {
 
-  val `./root/data`: String = "./root/data"
-  val `~` = "~"
-  val `/`: String = "/"
+
 
   def createDir(directory: Directory): Task[Boolean] = {
     Task.eval {
