@@ -21,7 +21,7 @@ object Dependencies {
 
   val FrontendDependencies = Seq(
     "com.typesafe.play"         %% "twirl-api"             % "1.5.0",
-    "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck,
+    //"org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck,
     "org.webjars" % "bootstrap" % "3.3.6"
   )
 

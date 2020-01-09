@@ -1,11 +1,8 @@
 import Dependencies._
 
-//enablePlugins(JavaAppPackaging, DockerPlugin, PlayScala)
-
-mainClass in Compile := Some("com.cloriko.WebServer")
+enablePlugins(PlayScala)
 
 PB.protocVersion := "-v3.10.0"
-
 
 lazy val root = (project in file("."))
   .settings(
@@ -15,17 +12,15 @@ lazy val root = (project in file("."))
       version      := Version.version
     )),
     name := "cloriko"
-  ).aggregate(common, master)
+  ).aggregate(common, master, frontend)
 
-/*
 lazy val frontend = (project in file("frontend"))
   .settings(
     name := "cloriko-frontend",
     libraryDependencies ++= FrontendDependencies,
-    version := Version.version
+    version := "0.0.3"
   )
-  .enablePlugins(JavaAppPackaging, DockerPlugin, PlayScala)
-*/
+
 lazy val common = (project in file("common"))
   .settings(
     name := "cloriko-common",
@@ -41,7 +36,7 @@ lazy val master = (project in file("master"))
     libraryDependencies ++= ProjectDependencies,
     version := "0.0.1"
   )
-  .dependsOn(common)
+  .dependsOn(common, frontend)
   .enablePlugins(JavaAppPackaging, DockerPlugin)
 
 
