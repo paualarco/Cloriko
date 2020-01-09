@@ -93,7 +93,8 @@ trait OperationalRoutes extends TwirlInstances with Generators {
         //val value = request.value
         println(s"Is completed ${request.isCompleted}")
         println(s"Value ${request.value}")
-        Accepted(views.html.index(List("")))
+        //Accepted(views.html.index(List("")))
+        Ok()
       }
 
       case req @ GET -> Root / "fetchGet" => {

@@ -38,7 +38,7 @@ trait UserRoutes extends TwirlInstances {
 
   lazy val userRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
 
-    case req @ GET -> Root => {
+    /* case req @ GET -> Root => {
       println("Index request received")
       Accepted(views.html.index(List("")))
     }
@@ -57,7 +57,7 @@ trait UserRoutes extends TwirlInstances {
     case req @ GET -> Root / "signIn" => {
       Accepted(views.html.sign_in(List("")))
     }
-
+*/
     case req @ POST -> Root / "signUp" => {
       val signUpRequest: SignUpEntity = req.as[SignUpEntity].unsafeRunSync()
       println(s"SignUp entity received: $signUpRequest")
@@ -68,7 +68,7 @@ trait UserRoutes extends TwirlInstances {
         .runAsync
       //TODO Makes no sense, is there no onSuccess( StatusCode()) ?
       IO.fromFuture(IO(signUpFutureResult)).unsafeRunSync() match {
-        case SignUpResult.CREATED => Created(views.html.main(List("")))
+        case SignUpResult.CREATED => Ok() //Created(views.html.main(List("")))
         case SignUpResult.REJECTED => BadRequest("Bad user specifications")
         case SignUpResult.ALREADY_EXISTED => Ok("Username already existed")
         case _ => InternalServerError("")

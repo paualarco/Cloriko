@@ -1,12 +1,12 @@
 package com.cloriko.slave
 
-import cats.implicits._
-import org.http4s.HttpRoutes
 import cats.effect.{ ExitCode, IO, IOApp }
+import cats.implicits._
+import monix.execution.Scheduler.Implicits.global
+import org.http4s.HttpRoutes
 import org.http4s.dsl.io._
 import org.http4s.implicits._
 import org.http4s.server.blaze._
-import monix.execution.Scheduler.Implicits.global
 
 object SlaveApp extends IOApp {
 

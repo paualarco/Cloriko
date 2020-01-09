@@ -1,15 +1,13 @@
 package com.cloriko.slave
 
-import com.cloriko.common.Global._
 import com.cloriko.common.DecoderImplicits._
-
-import com.cloriko.protobuf.protocol.{ Delete, FetchRequest, FetchResponse, File, FileReference, JoinReply, JoinRequest, MasterRequest, ProtocolGrpcMonix, SlaveResponse, Update, Updated }
+import com.cloriko.master.grpc.GrpcServer.GrpcChannel
+import com.cloriko.protobuf.protocol._
 import io.grpc.ManagedChannelBuilder
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.observers.Subscriber
 import monix.reactive.{ Consumer, Observable, OverflowStrategy }
-import com.cloriko.master.grpc.GrpcServer.GrpcChannel
 
 class Slave(username: String) {
   val slaveId = "randomSlaveId"

@@ -32,9 +32,9 @@ object SlaveConfig {
   def load(): SlaveConfig = loadConfigOrThrow[SlaveConfig]
 
   case class WebServerConfiguration(
-                                     host: String,
-                                     port: Int,
-                                     endPoint: String)
+    host: String,
+    port: Int,
+    endPoint: String)
 
 }
 

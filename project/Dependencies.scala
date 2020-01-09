@@ -32,7 +32,7 @@ object Dependencies {
     "beyondthelines"            %% "grpcmonixgenerator"    % "0.0.7",
     "com.thesamet.scalapb"      %% "compilerplugin"        % "0.7.0",
     "beyondthelines"            %% "grpcmonixruntime"      % "0.0.7",
-    "io.monix"                  %% "monix"                 % DependencyVersions.Monix,
+   // "io.monix"                  %% "monix"                 % DependencyVersions.Monix,
     "com.github.pureconfig"     %% "pureconfig"            % DependencyVersions.PureConfig,
     "com.typesafe"              % "config"                 % DependencyVersions.TypesafeConfig,
     "org.apache.logging.log4j"  %% "log4j-api-scala"       % DependencyVersions.Log4jScala,
@@ -48,7 +48,7 @@ object Dependencies {
     "org.http4s"                %% "http4s-circe"          % DependencyVersions.Http4s,
     "org.http4s"                %% "http4s-blaze-server"   % DependencyVersions.Http4s,
     "org.http4s"                %% "http4s-twirl"          % DependencyVersions.Http4s,
-    "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck,
+    "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck
   )
 
   private val TestDependencies = Seq(
@@ -63,4 +63,21 @@ object Dependencies {
   ).map( _ % Test)
 
   val ProjectDependencies: Seq[ModuleID] = MainDependencies ++ TestDependencies
+
+
+
+  val CommonDependencies: Seq[ModuleID] =Seq(
+    "io.grpc"                   % "grpc-netty"             % scalapb.compiler.Version.grpcJavaVersion,
+    "com.thesamet.scalapb"      %% "scalapb-runtime-grpc"  % scalapb.compiler.Version.scalapbVersion,
+    "com.thesamet.scalapb"      %% "scalapb-runtime"       % scalapb.compiler.Version.scalapbVersion % "protobuf",
+    "beyondthelines"            %% "grpcmonixgenerator"    % "0.0.7",
+    "com.thesamet.scalapb"      %% "compilerplugin"        % "0.7.0",
+    "beyondthelines"            %% "grpcmonixruntime"      % "0.0.7",
+    // "io.monix"                  %% "monix"                 % DependencyVersions.Monix,
+    "io.circe"                  %% "circe-core"            % DependencyVersions.Circe,
+    "io.circe"                  %% "circe-generic"         % DependencyVersions.Circe,
+    "io.circe"                  %% "circe-parser"          % DependencyVersions.Circe,
+   "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck
+  )
+
 }
