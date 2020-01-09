@@ -12,7 +12,7 @@ lazy val root = (project in file("."))
       version      := Version.version
     )),
     name := "cloriko"
-  ).aggregate(common, master, frontend)
+  ).aggregate(common, master, frontend, slave)
 
 lazy val frontend = (project in file("frontend"))
   .settings(
@@ -40,14 +40,13 @@ lazy val master = (project in file("master"))
   .enablePlugins(JavaAppPackaging, DockerPlugin)
 
 
-/*lazy val slave = (project in file("slave"))
+lazy val slave = (project in file("slave"))
   .settings(
     name := "cloriko-slave",
     //libraryDependencies ++= ProjectDependencies,
     version := Version.version
   )
   .dependsOn(common, master)
-  .enablePlugins(JavaAppPackaging, DockerPlugin)*/
 
 
 
