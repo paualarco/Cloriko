@@ -8,7 +8,7 @@ lazy val root = (project in file("."))
   .settings(
     inThisBuild(List(
       organization := "com.cloriko",
-      scalaVersion := "2.12.4",
+      scalaVersion := "2.12.10",
       version      := Version.version
     )),
     name := "cloriko"
@@ -19,7 +19,7 @@ lazy val frontend = (project in file("frontend"))
     name := "cloriko-frontend",
     libraryDependencies ++= FrontendDependencies,
     version := "0.0.3"
-  )
+  ).enablePlugins(PlayScala)
 
 lazy val common = (project in file("common"))
   .settings(

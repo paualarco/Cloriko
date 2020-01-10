@@ -38,7 +38,7 @@ trait UserRoutes extends TwirlInstances {
 
   lazy val userRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
 
-    /* case req @ GET -> Root => {
+    case req @ GET -> Root => {
       println("Index request received")
       Accepted(views.html.index(List("")))
     }
@@ -57,7 +57,7 @@ trait UserRoutes extends TwirlInstances {
     case req @ GET -> Root / "signIn" => {
       Accepted(views.html.sign_in(List("")))
     }
-*/
+
     case req @ POST -> Root / "signUp" => {
       val signUpRequest: SignUpEntity = req.as[SignUpEntity].unsafeRunSync()
       println(s"SignUp entity received: $signUpRequest")
