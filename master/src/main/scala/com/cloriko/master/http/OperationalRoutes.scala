@@ -2,12 +2,12 @@ package com.cloriko.master.http
 
 import cats.effect.IO
 import com.cloriko.master.Gateway
-import com.cloriko.protobuf.protocol.{ Delete, FetchRequest, File, FileReference, SlaveResponse, Update }
+import com.cloriko.protobuf.protocol.{Delete, FetchRequest, File, FileReference, SlaveResponse, Update}
 import monix.execution.Scheduler.Implicits.global
 import org.http4s.circe.jsonOf
-import org.http4s.dsl.io.{ ->, /, Ok, POST, Root }
+import org.http4s.dsl.io.{->, /, Ok, POST, Root}
 
-import scala.util.{ Random, Try }
+import scala.util.{Random, Try}
 import cats.effect._
 import com.google.protobuf.ByteString
 import io.circe._
@@ -29,21 +29,22 @@ import monix.execution.CancelableFuture
 import org.http4s.dsl.Http4sDsl
 import monix.execution.Scheduler
 import com.cloriko.common.DecoderImplicits._
+import com.cloriko.common.logging.ImplicitLazyLogger
+
 import scala.concurrent.duration._
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.{Await, Future}
 import org.http4s.twirl.TwirlInstances
 
-trait OperationalRoutes extends TwirlInstances with Generators {
+trait OperationalRoutes extends Generators with ImplicitLazyLogger {
 
   val cloriko: Gateway
   implicit val deleteDecoder = jsonOf[IO, Delete]
   implicit val fileReferenceDecoder = jsonOf[IO, FileReference]
   implicit val fetchRequestDecoder = jsonOf[IO, FetchRequest]
 
-  lazy val operationalRoutes: HttpRoutes[IO] = {
-    HttpRoutes.of[IO] {
+  lazy val operationalRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
       // case class com.cloriko.master.http.entities.DeleteEntity(id: String)
-      /*case req @ POST -> Root / "multipart" / username / slaveId / fileName / encodedPath => {
+      case req @ POST -> Root / "multipart" / username / slaveId / fileName / encodedPath => {
         req.decode[Multipart[IO]] { multipart =>
           val parts = multipart.parts
           parts.find(_.name == "file".some) match {
@@ -51,7 +52,7 @@ trait OperationalRoutes extends TwirlInstances with Generators {
               val byteString = ByteString.copyFrom(file.body.compile.toList.unsafeRunSync().toArray)
               val formattedPath = encodedPath.replace("|", "/")
               val update = Update("randomId", username, slaveId.toString, File(fileName, formattedPath, byteString).some)
-              println(s"Multipart update received ${update}")
+              ctxLogger.info(s"Multipart update received ${update}")(update)
               val resp = cloriko.dispatchRequestToMaster(update.asProto).get //rElse(Task.now(s"The update request was not delivered"))
                 .map {
                   case _: SlaveResponse => s"The Update operation was performed on ${update.slaveId}."
@@ -63,9 +64,9 @@ trait OperationalRoutes extends TwirlInstances with Generators {
             case None => BadRequest("The update multipart does not contain file")
           }
         }
-      }*/
+      }
 
-      /* case req @ POST -> Root / "delete" => {
+       case req @ POST -> Root / "delete" => {
         val delete: Delete = req.as[Delete].unsafeRunSync()
         println(s"WebServer - Delete operation received from user ${delete.username}")
         val resp = cloriko.dispatchRequestToMaster(delete.asProto).getOrElse(Task.now(s"The delete request sent was not delivered").runAsync)
@@ -75,7 +76,7 @@ trait OperationalRoutes extends TwirlInstances with Generators {
           case e => Task.eval(s"The delete request failed with error: $e").runAsync
         }
         Ok(IO.fromFuture(IO(resp)))
-      }*/
+      }
 
       case req @ POST -> Root / "fetch" => {
         val fetchRequest: FetchRequest = req.as[FetchRequest].unsafeRunSync()
@@ -94,7 +95,7 @@ trait OperationalRoutes extends TwirlInstances with Generators {
         println(s"Is completed ${request.isCompleted}")
         println(s"Value ${request.value}")
         //Accepted(views.html.index(List("")))
-        Ok()
+        Ok("Response")
       }
 
       case req @ GET -> Root / "fetchGet" => {
@@ -110,6 +111,5 @@ trait OperationalRoutes extends TwirlInstances with Generators {
         Ok { IO.fromFuture { IO { Task.eval[String]("HTTP RESPONSE").runAsync } } }
       }
     }
-  }
 }
 

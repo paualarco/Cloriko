@@ -13,6 +13,7 @@ object Dependencies {
 
     val Log4jScala = "11.0"
     val Log4j = "2.10.0"
+    val ScalaLogging = "3.9.2"
 
     val Scalatest = "3.0.4"
     val Scalacheck = "1.13.5"
@@ -25,33 +26,18 @@ object Dependencies {
     "org.webjars" % "bootstrap" % "3.3.6"
   )
 
-  private val MainDependencies = Seq(
-    "io.grpc"                   % "grpc-netty"             % scalapb.compiler.Version.grpcJavaVersion,
-    "com.thesamet.scalapb"      %% "scalapb-runtime-grpc"  % scalapb.compiler.Version.scalapbVersion,
-    "com.thesamet.scalapb"      %% "scalapb-runtime"       % scalapb.compiler.Version.scalapbVersion % "protobuf",
-    "beyondthelines"            %% "grpcmonixgenerator"    % "0.0.7",
-    "com.thesamet.scalapb"      %% "compilerplugin"        % "0.7.0",
-    "beyondthelines"            %% "grpcmonixruntime"      % "0.0.7",
-   // "io.monix"                  %% "monix"                 % DependencyVersions.Monix,
+  private val MasterDependencies = Seq(
     "com.github.pureconfig"     %% "pureconfig"            % DependencyVersions.PureConfig,
     "com.typesafe"              % "config"                 % DependencyVersions.TypesafeConfig,
     "org.apache.logging.log4j"  %% "log4j-api-scala"       % DependencyVersions.Log4jScala,
     "org.apache.logging.log4j"  % "log4j-api"              % DependencyVersions.Log4j,
     "org.apache.logging.log4j"  % "log4j-core"             % DependencyVersions.Log4j,
     "org.apache.logging.log4j"  % "log4j-slf4j-impl"       % DependencyVersions.Log4j,
-    "io.circe"                  %% "circe-core"            % DependencyVersions.Circe,
-    "io.circe"                  %% "circe-generic"         % DependencyVersions.Circe,
-    "io.circe"                  %% "circe-parser"          % DependencyVersions.Circe,
-    "org.http4s"                %% "http4s-server"         % DependencyVersions.Http4s,
-    "org.http4s"                %% "http4s-core"           % DependencyVersions.Http4s,
-    "org.http4s"                %% "http4s-dsl"            % DependencyVersions.Http4s,
-    "org.http4s"                %% "http4s-circe"          % DependencyVersions.Http4s,
-    "org.http4s"                %% "http4s-blaze-server"   % DependencyVersions.Http4s,
-    "org.http4s"                %% "http4s-twirl"          % DependencyVersions.Http4s,
-    "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck
+    "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck,
+    "org.typelevel" %% "cats-core" % "1.6.1"
   )
 
-  private val TestDependencies = Seq(
+  private val MasterTestDependencies = Seq(
     "com.typesafe.play"         %% "twirl-api"             % "1.5.0",
     "org.scalatest"             %% "scalatest"             % DependencyVersions.Scalatest,
     "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck,
@@ -59,10 +45,9 @@ object Dependencies {
     "com.typesafe.akka"         %% "akka-http"             % DependencyVersions.AkkaHttp,
     "com.typesafe.akka"         %% "akka-stream"           % DependencyVersions.Akka,
     "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0"
-
   ).map( _ % Test)
 
-  val ProjectDependencies: Seq[ModuleID] = MainDependencies ++ TestDependencies
+  val MasterProjectDependencies: Seq[ModuleID] = MasterDependencies ++ MasterTestDependencies
 
 
 
@@ -74,10 +59,18 @@ object Dependencies {
     "com.thesamet.scalapb"      %% "compilerplugin"        % "0.7.0",
     "beyondthelines"            %% "grpcmonixruntime"      % "0.0.7",
     // "io.monix"                  %% "monix"                 % DependencyVersions.Monix,
+    "org.http4s"                %% "http4s-server"         % DependencyVersions.Http4s,
+    "org.http4s"                %% "http4s-core"           % DependencyVersions.Http4s,
+    "org.http4s"                %% "http4s-dsl"            % DependencyVersions.Http4s,
+    "org.http4s"                %% "http4s-circe"          % DependencyVersions.Http4s,
+    "org.http4s"                %% "http4s-blaze-server"   % DependencyVersions.Http4s,
+    "org.http4s"                %% "http4s-twirl"          % DependencyVersions.Http4s,
     "io.circe"                  %% "circe-core"            % DependencyVersions.Circe,
     "io.circe"                  %% "circe-generic"         % DependencyVersions.Circe,
     "io.circe"                  %% "circe-parser"          % DependencyVersions.Circe,
-   "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck
+   "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck,
+    "com.typesafe.scala-logging"    %% "scala-logging" % DependencyVersions.ScalaLogging
+
   )
 
 }

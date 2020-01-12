@@ -26,7 +26,7 @@ object DecoderImplicits {
     }
   }
 
-  class ExtendedMasterRequest(masterRequest: MasterRequest) {
+  case class ExtendedMasterRequest(masterRequest: MasterRequest) {
     private val descriptor = getMasterRequestDescriptor(masterRequest)
     val id: String = descriptor.id
     val username: String = descriptor.username

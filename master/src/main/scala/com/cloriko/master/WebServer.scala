@@ -32,7 +32,7 @@ object WebServer extends IOApp with OperationalRoutes with UserRoutes {
 
   Future(new GrpcServer(endPoint, cloriko).start().blockUntilShutdown())
 
-  val routes = userRoutes //<+> operationalRoutes
+  val routes = userRoutes <+> operationalRoutes
 
   def run(args: List[String]): IO[ExitCode] =
     BlazeServerBuilder[IO]
