@@ -12,13 +12,14 @@ import scala.concurrent.Future
 import cats.implicits._
 import org.http4s.HttpRoutes
 import cats.effect.{ ExitCode, IO, IOApp }
+import com.cloriko.common.logging.ImplicitLazyLogger
 import com.cloriko.config.MasterConfig
 import org.http4s.dsl.io._
 import org.http4s.implicits._
 import org.http4s.server.blaze._
 import monix.execution.Scheduler.Implicits.global
 
-object WebServer extends IOApp with OperationalRoutes with UserRoutes {
+object WebServer extends IOApp with OperationalRoutes with UserRoutes with ImplicitLazyLogger {
 
   val cloriko: Gateway = new Gateway
 
@@ -28,7 +29,7 @@ object WebServer extends IOApp with OperationalRoutes with UserRoutes {
 
   val endPoint = config.server.endPoint
 
-  println(s"Starting web server on endpoint: $endPoint")
+  logger.info(s"Starting web server on endpoint: $endPoint")
 
   Future(new GrpcServer(endPoint, cloriko).start().blockUntilShutdown())
 

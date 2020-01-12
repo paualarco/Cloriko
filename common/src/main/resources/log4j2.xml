@@ -5,7 +5,7 @@
             <JSONLayout compact="true" properties="false" eventEol="true">
                 <KeyValuePair key="id" value="$${ctx:id:-}"/>
                 <KeyValuePair key="username" value="$${ctx:username:-}"/>
-                <KeyValuePair key="slaveId" value="$${ctx:slaveid:-}"/>
+                <KeyValuePair key="slaveId" value="$${ctx:slaveId:-}"/>
             </JSONLayout>
         </Console>
     </Appenders>

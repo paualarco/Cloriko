@@ -1,6 +1,7 @@
 package com.cloriko.common
 
 import com.cloriko.protobuf.protocol.{ MasterRequest, SlaveResponse }
+import com.google.protobuf.GeneratedMessage
 
 object DecoderImplicits {
 
@@ -58,7 +59,7 @@ object DecoderImplicits {
     }
   }
 
-  class ExtendedSlaveResponse(slaveResponse: SlaveResponse) {
+  case class ExtendedSlaveResponse(slaveResponse: SlaveResponse) {
     private val descriptor = decodeSlaveResponse(slaveResponse)
     val id: String = descriptor.id
     val username: String = descriptor.username

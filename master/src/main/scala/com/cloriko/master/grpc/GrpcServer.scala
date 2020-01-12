@@ -9,9 +9,11 @@ import com.cloriko.master.grpc.GrpcServer.GrpcChannel
 import monix.reactive.observers.Subscriber
 import monix.execution.Scheduler.Implicits.global
 import com.cloriko.common.DecoderImplicits._
+import com.cloriko.common.logging.ImplicitLazyLogger
+
 import scala.concurrent.duration._
 
-class GrpcServer(localEndPoint: String, cloriko: Gateway) {
+class GrpcServer(localEndPoint: String, cloriko: Gateway) extends ImplicitLazyLogger {
 
   private[this] var server: Server = null
 
@@ -44,26 +46,26 @@ class GrpcServer(localEndPoint: String, cloriko: Gateway) {
       val JoinRequest(id, username, password, slaveId) = joinRequest
       cloriko.joinRequest(id, username, password, slaveId).map {
         case true => {
-          println(s"GrpcServer - Returning JoinReply($id, true)")
+          logger.info(s"GrpcServer - Returning JoinReply($id, true)")
           JoinReply(id, true)
         }
         case false => {
-          println(s"GrpcServer - The $joinRequest failed")
+          logger.info(s"GrpcServer - The $joinRequest failed")
           JoinReply(id, false)
         }
       }
     }
 
     override def protocol(input: Observable[SlaveResponse]): Observable[MasterRequest] = {
-      println("Grpc - UpdateStream protocol received!")
+      logger.info("Grpc - UpdateStream protocol received!")
       val downStream = input
       Observable.create(OverflowStrategy.Unbounded) { upStream: Subscriber.Sync[MasterRequest] =>
         downStream.runAsyncGetFirst.map { //Updated used for starting, this is also causing to trigger two observables
           case Some(slaveResponse: SlaveResponse) => {
-            println(s"Grpc - The first Update event of the flow was caught, username:${slaveResponse.username}, slaveId:${slaveResponse.slaveId}")
+            logger.info(s"Grpc - The first Update event of the flow was caught, username:${slaveResponse.username}, slaveId:${slaveResponse.slaveId}")
             cloriko.registerGrpcChannel(GrpcChannel[SlaveResponse, MasterRequest](slaveResponse.username, slaveResponse.slaveId, downStream, upStream)).runAsync
           }
-          case None => println(s"Grpc - failed when getting first Updated event of the flow")
+          case None => logger.info(s"Grpc - failed when getting first Updated event of the flow")
         }
       }
     }

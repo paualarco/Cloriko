@@ -20,44 +20,36 @@ object Dependencies {
     val Mockito = "2.18.3"
   }
 
-  val FrontendDependencies = Seq(
+  val FrontendDependencies: Seq[ModuleID] = Seq(
     "com.typesafe.play"         %% "twirl-api"             % "1.5.0",
-    //"org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck,
     "org.webjars" % "bootstrap" % "3.3.6"
   )
 
-  private val MasterDependencies = Seq(
+  val MasterDependencies: Seq[ModuleID] = Seq(
     "com.github.pureconfig"     %% "pureconfig"            % DependencyVersions.PureConfig,
     "com.typesafe"              % "config"                 % DependencyVersions.TypesafeConfig,
-    "org.apache.logging.log4j"  %% "log4j-api-scala"       % DependencyVersions.Log4jScala,
-    "org.apache.logging.log4j"  % "log4j-api"              % DependencyVersions.Log4j,
-    "org.apache.logging.log4j"  % "log4j-core"             % DependencyVersions.Log4j,
-    "org.apache.logging.log4j"  % "log4j-slf4j-impl"       % DependencyVersions.Log4j,
     "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck,
-    "org.typelevel" %% "cats-core" % "1.6.1"
   )
 
-  private val MasterTestDependencies = Seq(
+  private val TestDependencies = Seq(
     "com.typesafe.play"         %% "twirl-api"             % "1.5.0",
     "org.scalatest"             %% "scalatest"             % DependencyVersions.Scalatest,
     "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck,
     "org.mockito"               %  "mockito-core"          % DependencyVersions.Mockito,
-    "com.typesafe.akka"         %% "akka-http"             % DependencyVersions.AkkaHttp,
-    "com.typesafe.akka"         %% "akka-stream"           % DependencyVersions.Akka,
     "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0"
   ).map( _ % Test)
 
-  val MasterProjectDependencies: Seq[ModuleID] = MasterDependencies ++ MasterTestDependencies
-
-
-
-  val CommonDependencies: Seq[ModuleID] =Seq(
+  val MasterSlaveDependencies: Seq[ModuleID] =Seq(
     "io.grpc"                   % "grpc-netty"             % scalapb.compiler.Version.grpcJavaVersion,
     "com.thesamet.scalapb"      %% "scalapb-runtime-grpc"  % scalapb.compiler.Version.scalapbVersion,
     "com.thesamet.scalapb"      %% "scalapb-runtime"       % scalapb.compiler.Version.scalapbVersion % "protobuf",
     "beyondthelines"            %% "grpcmonixgenerator"    % "0.0.7",
     "com.thesamet.scalapb"      %% "compilerplugin"        % "0.7.0",
     "beyondthelines"            %% "grpcmonixruntime"      % "0.0.7",
+    "org.apache.logging.log4j"  %% "log4j-api-scala"       % DependencyVersions.Log4jScala,
+    "org.apache.logging.log4j"  % "log4j-api"              % DependencyVersions.Log4j,
+    "org.apache.logging.log4j"  % "log4j-core"             % DependencyVersions.Log4j,
+    "org.apache.logging.log4j"  % "log4j-slf4j-impl"       % DependencyVersions.Log4j,
     // "io.monix"                  %% "monix"                 % DependencyVersions.Monix,
     "org.http4s"                %% "http4s-server"         % DependencyVersions.Http4s,
     "org.http4s"                %% "http4s-core"           % DependencyVersions.Http4s,
@@ -68,9 +60,10 @@ object Dependencies {
     "io.circe"                  %% "circe-core"            % DependencyVersions.Circe,
     "io.circe"                  %% "circe-generic"         % DependencyVersions.Circe,
     "io.circe"                  %% "circe-parser"          % DependencyVersions.Circe,
-   "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck,
+    "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck,
     "com.typesafe.scala-logging"    %% "scala-logging" % DependencyVersions.ScalaLogging
-
   )
+
+  val CommonProjectDependencies: Seq[ModuleID] = MasterSlaveDependencies ++ TestDependencies
 
 }
