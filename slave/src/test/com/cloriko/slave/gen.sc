@@ -1,0 +1,4 @@
+
+
+
+FileSystem.delete(FileSystem.`./root`)
