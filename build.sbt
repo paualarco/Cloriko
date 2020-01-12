@@ -24,18 +24,15 @@ lazy val frontend = (project in file("frontend"))
 lazy val common = (project in file("common"))
   .settings(
     name := "cloriko-common",
-    libraryDependencies ++= CommonDependencies,
+    libraryDependencies ++= MasterSlaveDependencies,
     version := "0.0.2"
   )
   .enablePlugins(JavaAppPackaging, DockerPlugin)
 
-  //.dependsOn(frontend % "compile->compile;test->test")
-
-
 lazy val master = (project in file("master"))
   .settings(
     name := "cloriko-master",
-    libraryDependencies ++= MasterProjectDependencies,
+    libraryDependencies ++= MasterDependencies,
     version := "0.0.1"
   )
   .dependsOn(frontend, common)
@@ -44,10 +41,9 @@ lazy val master = (project in file("master"))
 lazy val slave = (project in file("slave"))
   .settings(
     name := "cloriko-slave",
-    //libraryDependencies ++= ProjectDependencies,
     version := Version.version
   )
-  .dependsOn( master, common)
+  .dependsOn(master, common)
   .enablePlugins(JavaAppPackaging, DockerPlugin)
 
 

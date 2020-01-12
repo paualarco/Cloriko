@@ -20,6 +20,7 @@ import org.http4s.dsl.io._
 import org.http4s.multipart.Multipart
 import org.http4s.twirl.TwirlInstances
 import cats.implicits._
+import com.cloriko.common.logging.ImplicitLazyLogger
 import com.cloriko.master.UserAuthenticator.{ SignInResult, SignUpResult }
 import com.cloriko.master.UserAuthenticator.SignInResult.SignInResult
 import com.cloriko.master.UserAuthenticator.SignUpResult.SignUpResult
@@ -30,7 +31,7 @@ import monix.eval.Task
 
 import scala.concurrent.Future
 
-trait UserRoutes extends TwirlInstances {
+trait UserRoutes extends TwirlInstances with ImplicitLazyLogger {
 
   val cloriko: Gateway
   implicit val signUpRequestEntityDecoder = jsonOf[IO, SignUpEntity]
@@ -60,9 +61,9 @@ trait UserRoutes extends TwirlInstances {
 
     case req @ POST -> Root / "signUp" => {
       val signUpRequest: SignUpEntity = req.as[SignUpEntity].unsafeRunSync()
-      println(s"SignUp entity received: $signUpRequest")
+      logger.info(s"SignUp entity received: $signUpRequest")
       val SignUpEntity(username, password, name, lastName, email) = signUpRequest
-      println(s"WebServer - SingUpRequest received for user $username")
+      logger.info(s"WebServer - SingUpRequest received for user $username")
       val signUpFutureResult: CancelableFuture[SignUpResult] = UserAuthenticator
         .signUp(username, password, name, lastName, email)
         .runAsync
@@ -77,9 +78,9 @@ trait UserRoutes extends TwirlInstances {
 
     case req @ POST -> Root / "signIn" => {
       val logInRequestEntity: SignInEntity = req.as[SignInEntity].unsafeRunSync()
-      println(s"LogIn entity received: $logInRequestEntity")
+      logger.info(s"LogIn entity received: $logInRequestEntity")
       val SignInEntity(username, password) = logInRequestEntity
-      println(s"WebServer - User log in request received for user $username")
+      logger.info(s"WebServer - User log in request received for user $username")
       val signInFutureResult: CancelableFuture[SignInResult] = UserAuthenticator.signIn(username, password).runAsync
       (IO.fromFuture(IO(signInFutureResult))).unsafeRunSync() match {
         case SignInResult.AUTHENTICATED => Accepted("UserAuthenticated")

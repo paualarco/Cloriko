@@ -15,6 +15,6 @@
         </Root>
         <Logger name="com.cloriko" level="${env:LOG_LEVEL:-INFO}" />
         <Logger name="io.monix" level="${env:LOG_LEVEL:-INFO}" />
-        <Logger name="org.http4s" level="${env:LOG_LEVEL:-INFO}" />
+        <Logger name="org.http4s" level="${env:LOG_LEVEL:-WARN}" />
     </Loggers>
 </Configuration>
