@@ -8,10 +8,11 @@ import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import com.cloriko.protobuf.protocol.{ Delete, Directory, FileReference, File => SlaveFile }
 import com.cloriko.common.Global._
+import com.cloriko.common.logging.ImplicitLazyLogger
 
 import scala.util.{ Failure, Success, Try }
 
-object FileSystem {
+object FileSystem extends ImplicitLazyLogger {
 
   def createDir(directory: Directory): Task[Boolean] = {
     Task.eval {
@@ -24,8 +25,8 @@ object FileSystem {
     if (dirPath.startsWith(`./root/data`)) {
       val dir: File = new File(dirPath)
       val created = dir.mkdirs() //it returns false if the file already existed
-      if (created) println(s"FileSystem - Created dir $dirPath ")
-      else println(s"FileSystem - The dir $dirPath was already created")
+      if (created) logger.info(s"FileSystem - Created dir $dirPath ")
+      else logger.info(s"FileSystem - The dir $dirPath was already created")
       created
     } else {
       println(s"FileSystem - The dir was not created since the path $dirPath does not start by ${`./root/data`}")
@@ -46,16 +47,16 @@ object FileSystem {
           outputStream.close()
         } match {
           case Failure(exception) => {
-            println(s"FilesSystem - ERROR - The file ${filePath} could not be created, exception was caught: ${exception}")
+            logger.info(s"FilesSystem - ERROR - The file ${filePath} could not be created, exception was caught: ${exception}")
             false
           }
           case Success(_) => {
-            println(s"FileSystem - The file ${filePath} was created")
+            logger.info(s"FileSystem - The file ${filePath} was created")
             true
           }
         }
       } else {
-        println(s"The file ${slaveFile.fileName} already existed")
+        logger.info(s"The file ${slaveFile.fileName} already existed")
         false
       }
     }
@@ -65,15 +66,15 @@ object FileSystem {
     val filePath: String = file.getPath
     if (filePath.startsWith(`./root/data`)) {
       if (!file.exists()) {
-        println(s"FileSystem - The file $filePath that was supposed to be deleted, did not existed")
+        logger.info(s"FileSystem - The file $filePath that was supposed to be deleted, did not existed")
         false
       } else {
         val deleted = file.delete()
-        println(s"FileSystem - Deleted $filePath, deleted response $deleted")
+        logger.info(s"FileSystem - Deleted $filePath, deleted response $deleted")
         deleted
       }
     } else {
-      println(s"The file $filePath can not be deleted since there is no permissions to perform deletes outside of ${`./root/data`}")
+      logger.info(s"The file $filePath can not be deleted since there is no permissions to perform deletes outside of ${`./root/data`}")
       false
     }
   }
@@ -84,18 +85,18 @@ object FileSystem {
       if (dir.exists()) {
         var subFiles = dir.listFiles()
         if (subFiles == null) subFiles = Array()
-        println(s"FileSystem - The directory $path to be deleted is not empty, deleting subdirectories first...")
+        logger.info(s"FileSystem - The directory $path to be deleted is not empty, deleting subdirectories first...")
         val subFilesDeleted = subFiles.foldLeft(true)((deleted: Boolean, subDir: File) => deleted && deleteDirRecursively(subDir))
         //subFiles.foreach(_ => deleteDirRecursively(_))
         val deleted = dir.delete() && subFilesDeleted
-        println(s"FileSystem - Deleted $path, recursive deletetion response $deleted")
+        logger.info(s"FileSystem - Deleted $path, recursive deletetion response $deleted")
         deleted
       } else {
-        println(s"FileSystem - The path $path that was supposed to be deleted does not exist")
+        logger.info(s"FileSystem - The path $path that was supposed to be deleted does not exist")
         false
       }
     } else {
-      println(s"The dir $path since there is no permissions to perform deletes outside of ${`./root/data`}")
+      logger.info(s"The dir $path since there is no permissions to perform deletes outside of ${`./root/data`}")
       false
     }
   }
@@ -107,7 +108,7 @@ object FileSystem {
       if (dir.isFile) {
         deleteDirRecursively(dir)
       } else { //todo test
-        println(s"FileSyetem - The given slave file was not actually a file, path $dirPath ")
+        logger.info(s"FileSyetem - The given slave file was not actually a file, path $dirPath ")
         false
       }
     }
@@ -121,11 +122,11 @@ object FileSystem {
         if (file.isFile) {
           delete(file)
         } else { //todo test
-          println(s"FileSyetem - The given slave file was not actually a file, path $filePath ")
+          logger.info(s"FileSyetem - The given slave file was not actually a file, path $filePath ")
           false
         }
       } else {
-        println(s"FileSyetem - The given file path ${fileRef.path} did non started with `/`. ")
+        logger.info(s"FileSyetem - The given file path ${fileRef.path} did non started with `/`. ")
         false
       }
     }
@@ -138,7 +139,7 @@ object FileSystem {
       if (file.isFile) {
         delete(file)
       } else { //todo test
-        println(s"FileSyetem - The given slave file was not actually a file, path $filePath ")
+        logger.info(s"FileSyetem - The given slave file was not actually a file, path $filePath ")
         false
       }
     }
@@ -146,7 +147,7 @@ object FileSystem {
 
   def scanFile(fileRef: FileReference): Task[SlaveFile] = {
     Task.eval {
-      println("FileSystem - Scanning file")
+      logger.info("FileSystem - Scanning file")
       val bytes: Array[Byte] = Files.readAllBytes(Paths.get(fileRef.absolutePath))
       fileRef.asSlaveFile(ByteString.copyFrom(bytes))
     }

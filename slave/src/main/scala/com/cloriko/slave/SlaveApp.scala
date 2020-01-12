@@ -3,14 +3,15 @@ package com.cloriko.slave
 import cats.implicits._
 import org.http4s.HttpRoutes
 import cats.effect.{ ExitCode, IO, IOApp }
+import com.cloriko.common.logging.ImplicitLazyLogger
 import org.http4s.dsl.io._
 import org.http4s.implicits._
 import org.http4s.server.blaze._
 import monix.execution.Scheduler.Implicits.global
 
-object SlaveApp extends IOApp {
+object SlaveApp extends IOApp with ImplicitLazyLogger {
 
-  println("Starting slave app")
+  logger.info("Starting slave app")
   val slaveRoutes = HttpRoutes.of[IO] {
     case GET -> Root / "joinRequest" / username / password => {
       val slave = Slave(username)
