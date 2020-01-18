@@ -11,46 +11,43 @@ therefore meaning that the ownership and responsability of the data will exclusi
 ## Getting started
 The below steps shows the process for the user to get started:
 -	Create a user account to Cloriko’s website: [www.cloriko.com](https://www.cloriko.com)
--	Installing its software in a machine in which it is wanted to use as storage system.
--   Once installed, there will be accessible the following link: [http://localhost:8980](http://localhost:8980) in which from ther, would be possible to authenticate the machine as a user's `slave` (named to referentiate a user's authenticated device) and also tweak some configurations.
--   At this point, the user does have read and write access the web app to the `slave` documents of a restricted folder. 
--   From there on, the process of adding `slaves` can be repeated as much times as machines the user wants to keep connected to cloriko. 
+-	Installing the `cloriko-slave` software in a machine in which it is wanted to be used as a storage system.
+- Once installed the following link will become available: [http://localhost:8980](http://localhost:8980) in which from there would be possible to authenticate the machine as user's `slave` (named to referentiate a user's authenticated device) and also tweak some configurations.
+- At this point the user does have read and write access from the web app to the `slave` documents in the application's restricted folder. 
+- From there on, the process of adding `slaves` can be repeated as much times as machines the user wants to keep connected to cloriko. 
+- File operations directly performed on the local file system would be represented on the web
 
 ## Technical overview
-The application mainly developed using the Scala language and sbt, it is composed by the 
- following sbt submodules `master`, `slave`, `common` and `frontend`.
+The application is mainly developed using the Scala language and sbt, and it is composed by the 
+ following submodules `master`, `slave`, `common` and `frontend`.
 
 ### Master
-The master is the backend of cloriko's service that conforms the middleware between user requests and slave responses, implemented as a mix of HTTP and gRPC protocols, relatively used for communicating with users and slaves.
+The master represents the server backend which that acts as a middleware between `user requests` and `slave responses`, it is implemented as a mix of HTTP and gRPC protocols, relatively used for communicating with users and slaves.
 
 - HTTP: The internet application protocol most commonly used for interacting with 
-user requests. It is built on top of [Http4s](https://www.http4s.io), which implements all the necessary routes for 
- creating, deleting, moving and fetching from the slaves FS. Moreover, it also provides the 
- routes for fetching the html pages. 
+user requests. It is built on top of [Http4s](https://www.http4s.io) with twirl, which implements all the necessary http routes for user requests such as registration and authentication but also operational request such as creating, deleting, moving and fetching from the slaves FS.
 
-- gRPC: The protocol created by google that is implemented using Remote Procedure Calls, which allow 
-to create permanent connections between two end-points. Is because of that feature that this protocol was chosen to implement 
-the comunication between the `Master` and the `Slave`. Being the plugin [GrpcMonix](https://www.github.com/beyonthelines/grpcMonix) used to sync with the 
-rest of the project that is built on top of [Monix](https://www.monix.io). The master does implements the grpc protocol `MasterSlaveGrpcProtocol` in which it 
-can be accessed from the outside world, in this case from the slaves. (The protocol is explained below at the [Common](Common) section).
+- gRPC: A protocol created by google (google Remote Procedure Call) that was chosen to be integrated in the Cloriko's platform since it allowed to create permanent connections between two end-points, in that case  between the `Master` and the `Slave`.  
+Being the grpc service binded as a passive stub that listens for a slave request to initialize communication protocol defined below at the [`cloriko-common`](Common) sub project.
+
+The overall of the project that is mainly built on top of [Monix](https://www.monix.io), an asyncronous programming library that facilitated to create an event based reactive platform. This one was chosen over the Akka toolkit by its simplicity and interoperability with other functional programming libraries such as Http4s and Cats. 
+Being the plugin [GrpcMonix](https://www.github.com/beyonthelines/grpcMonix) used to sync with the
 
 ### Slave
-A slave is the representation of a user's machine with the `cloriko-slave` application 
-installed on it and authenticated against the `cloriko-master` server.
-It does act as an end-point that initializes a permanent grpc connection with the master. At the end, the grpc protocol is a definition of a stream of messages,
-in which each message represents specific operation that will be performed on the slave's `File System`. 
-This component does also depends on Monix to interact with the master `GrpcMonix` stub and to perform the IO ops. 
-It also uses Http4s, in that case to define a local end-point accessible for the user to entry their credentials.
+A slave is the representation of a user's machine with the `cloriko-slave` application installed on it and authenticated against the `cloriko-master` server.
+It does act as an end-point that initializes a permanent grpc connection with the master. 
+So at the end, this grpc protocol is a definition of a stream of messages that each one represents a specific operation that will be performed on the slave's `File System`. 
+This component does also depends on Monix and Http4s, the second one in that case is used define a local end-point accessible for the user to entry their credentials.
 
 ### Frontend 
-The front will allow the users to basically authenticate to the server and interact with the data in their Slaves as if they were accessing it locally.
+The frontend will allow the users to basically authenticate against the server and interact with their Slaves' data as if they were accessing to it locally.
 
-Since the all of the platform is written in the Scala language, the frontend could not be less, so it was develop using the [Play Framework](https://www.playframework.io) that mixes the Scala HTML `scala.html` files, with some of `.js` and `.css`.
+Since the all of the platform is written in the Scala language, the frontend could not be less, so that was developed using the [Play](https://www.playframework.io), a framework that mixes the Scala and HTML into`scala.html` files, with the addition of some `javascript` and `CSS`.
 
 ### Common
-Those functionalities that were required from both `master` and `slave` were included in the `cloriko-common` as a different sub-module.
-This is mainly the place where the grpc `.proto` files are defined. These can be found in the `/protobuf` folder, as a standard that allows the the scala protobuf pluguin to found and build them.
-It also includes helpful classes to work with the syntax generated from the proto files and a set of generators defined using [scalacheck](https://www.scalacheck.org) which will be needed for testing purposes. 
+Those functionalities that were required from both `master` and `slave` were included in the `cloriko-common` as a different sub module that both depends on.
+It is mainly the place where the grpc `.proto` files are defined. These can be found in the `/protobuf` folder, as a standard that allows the the scala protobuf pluguin to found and build an abstraction of it to be used with the Scala language.
+It also includes helpful objects with scala `implicit extensions` defined that makes easier syntax to be used from the proto generated classes and also a set of generators defined using [scalacheck](https://www.scalacheck.org) that are needed for testing purposes.
 
 ### End-to-end 
 Once we have defined all the c
