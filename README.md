@@ -1,12 +1,22 @@
 # Cloriko
-
-## Introducction
  
 Cloriko is a non yet implemented platform that will provide data storage solution that differs from the cloud model 
 in which monthly payments are required and data is stored on the external companies' infrastructure. 
 In contrast, using this new model the user will need to use commodity machines as storage service, 
 in which they will be able to make it accessible through the Cloriko's platform, from any other authenticated device, 
 therefore meaning that the ownership and responsability of the data will exclusively be on the user. 
+
+# Table of Contents
+
+1. [Getting started](#getting-started)
+2. [Comparing with existing storage solutions](#comparing-with-exisiting-storage-solutions)
+3. [Technical overview](#technical-overview)
+4. [Master](#master)
+5. [Slave](#slave)
+6. [Common](#common)
+8. [Frontend](#frontend)
+9. [Requirements](#requirements)
+10. [Future work](#future-work)
 
 ## Getting started
 The below steps shows the process for the user to get started:
