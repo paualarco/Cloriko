@@ -30,8 +30,7 @@ user requests. It is built on top of [Http4s](https://www.http4s.io) with twirl,
 - gRPC: A protocol created by google (google Remote Procedure Call) that was chosen to be integrated in the Cloriko's platform since it allowed to create permanent connections between two end-points, in that case  between the `Master` and the `Slave`.  
 Being the grpc service binded as a passive stub that listens for a slave request to initialize communication protocol defined below at the [`cloriko-common`](Common) sub project.
 
-The overall of the project that is mainly built on top of [Monix](https://www.monix.io), an asyncronous programming library that facilitated to create an event based reactive platform. This one was chosen over the Akka toolkit by its simplicity and interoperability with other functional programming libraries such as Http4s and Cats. 
-Being the plugin [GrpcMonix](https://www.github.com/beyonthelines/grpcMonix) used to sync with the
+The overall project is mainly built on top of [Monix](https://www.monix.io), an asyncronous programming library that facilitated to create an event based reactive platform. This one was chosen over the Akka toolkit for its simplicity and interoperability with other functional programming libraries such as Http4s and Cats. 
 
 ### Slave
 A slave is the representation of a user's machine with the `cloriko-slave` application installed on it and authenticated against the `cloriko-master` server.
@@ -45,37 +44,23 @@ The frontend will allow the users to basically authenticate against the server a
 Since the all of the platform is written in the Scala language, the frontend could not be less, so that was developed using the [Play](https://www.playframework.io), a framework that mixes the Scala and HTML into`scala.html` files, with the addition of some `javascript` and `CSS`.
 
 ### Common
-Those functionalities that were required from both `master` and `slave` were included in the `cloriko-common` as a different sub module that both depends on.
-It is mainly the place where the grpc `.proto` files are defined. These can be found in the `/protobuf` folder, as a standard that allows the the scala protobuf pluguin to found and build an abstraction of it to be used with the Scala language.
-It also includes helpful objects with scala `implicit extensions` defined that makes easier syntax to be used from the proto generated classes and also a set of generators defined using [scalacheck](https://www.scalacheck.org) that are needed for testing purposes.
+Those functionalities required from both `master` and `slave` were included as a different sub module `cloriko-common` in which both depends on.
+It is where the grpc `.proto` files are defined. They can be found in the `/protobuf` folder, it would allow the the [scala protobuf](https://scalapb.github.io/) pluguin to find and build an abstraction of such protocol to be used with the Scala language.
+The sub project also includes some `implicit extensions` that makes easier syntax to be used from the proto generated classes and also a set of generators defined using [scalacheck](https://www.scalacheck.org) that are needed for testing purposes.
 
-### End-to-end 
-Once we have defined all the c
-The application allow the users to create permanent connections between the device and the cloriko server, in which this connection would be accessible for the user 
-to store information from anywhere. 
-integrates a data transport protocol based on grpc and http that allows the users to create permanent connection from their devices to the cloriko server that makes  their  their devices visible
-
-This section includes the main features of the product: 
-Make the desired data available from each of the network’s devices and make it accessible from the Web App.
-In order to achieve that, different requirements will be needed to be developed: 
+## Requirements
+This section includes the main requirements for the first version of the project the product: 
+- Make the desired data available from each of the network’s devices and make it accessible from the Web App.
 -	Web app that will allow users to register, log in, and see their data.
 -	Each device is be automatically set up by installing the Cloriko software and logging in it. 
--	A new folder is being created when installing the software therefore any document can be put there and it will be updated to personal cloud.
--	At least one device is be needed to be registered with the possibility of adding multiple devices, thing that would simulate a cloud behaviour.
+-	A new folder is being created when installing the software therefore any document can be put there and it will be updated to personal storage.
 -	Three different storage modalities defined: Safe and Light and Duplication
-	Safe : All the content updated to the application is replicated in at least two replicas. Note that it is only possible to use this mode when there have been set at least two devices for the same user and a maximum of 3 recommended.
-	Lighter mode does not care about any replicas. So the device’s data would be lost in the case that one of the gets down.
-	Duplication: This mode will also be available for those cases in which we want all the data in each device. (This mode is very heavy and it is not really seen as a cloud behaviour, instead it is more seen like a shared folder in which each user has the full copy of the data, allowing with no network latency and accessing the full content in an offline mode (explained below).
--	The platform will just be available for online access since it only will be available using to be used from the web app.
+-	The platform will just be available for online access since it only will be available from the web app.
 -	Two privacy modes, Public and Private.
-	Public: Allows users to have the documents their selected opened to everyone (including themselves). So at the end, it avoids the need of having to log in for accessing to any content.
-	Private: Just the opposite to Public
--	When the data gets deleted, a notification from the device is sent to the Master server whom will handle it in a different way depending on the storage modality currently being used.
-	Safe: In a safe mode the user is asked for choosing between forwarding the deletion
-
+--	Public: Allows users to have the documents their selected opened to everyone (including themselves). So at the end, it avoids the need of having to log in for accessing to any content.
+--	Private: Just the opposite to Public
 
 ## Future work
-
 As it was said in the introduction section, this paradigm is yet in production nor yet totally implemented and tested, therefore different features can be yet to discover and be developed, in which the initial approach was mainly represented on above explanation, there is already some ideas that could be included in future versions of the same: 
 
 -	Allow multiple contexts & clusters for the same user
@@ -84,3 +69,10 @@ As it was said in the introduction section, this paradigm is yet in production n
 
 -	Copy, move and rename operations will be available at the client side 
 
+-	At least one device is needed to be registered with the possibility of adding multiple devices, thing that would simulate a cloud behaviour.
+--	Safe : All the content updated to the application is replicated in at least two replicas. Note that it is only possible to use this mode when there have been set at least two devices for the same user and a maximum of 3 recommended.
+--	Lighter mode does not care about any replicas. So the device’s data would be lost in the case that one of the gets down.
+-- Duplication: This mode will also be available for those cases in which we want all the data in each device. (This mode is very heavy and it is not really seen as a cloud behaviour, instead it is more seen like a shared folder in which each user has the full copy of the data, allowing with no network latency and accessing the full content in an offline mode (explained below).
+
+-	When the data gets deleted, a notification from the device is sent to the Master server whom will handle it in a different way depending on the storage modality currently being used.
+--	Safe: In a safe mode the user is asked for choosing between forwarding the deletion
